@@ -18,6 +18,7 @@ load_config()
 ROOT = Path(__file__).parent
 app = FastAPI(title="Shoppably", docs_url="/api/docs")
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
+app.mount("/media", StaticFiles(directory=ROOT / "marketing" / "media"), name="media")
 arcade = ArcadeClient()
 _catalog = None
 _catalog_at = 0
@@ -51,6 +52,11 @@ async def production_categories():
 
 
 @app.get("/")
+async def marketing():
+    return FileResponse(ROOT / "marketing" / "index.html")
+
+
+@app.get("/demo")
 async def index():
     return FileResponse(ROOT / "static" / "index.html")
 

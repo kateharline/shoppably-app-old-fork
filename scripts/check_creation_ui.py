@@ -22,7 +22,7 @@ async def main():
         await page.clock.install()
         # Hold the response open to reproduce a request that otherwise spins forever.
         await page.route("**/api/creation/test-job", lambda _r: None)
-        await page.goto("http://127.0.0.1:8011", wait_until="domcontentloaded")
+        await page.goto("http://127.0.0.1:8011/demo", wait_until="domcontentloaded")
         await page.wait_for_selector("#generation:not([hidden])")
         assert "test-job" in await page.locator("#generation-job").inner_text()
         await page.clock.run_for(31000)

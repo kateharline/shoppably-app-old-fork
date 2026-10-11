@@ -4,6 +4,14 @@ Pause a video, select an object, and create an Arcade.ai product inspired by it.
 FastAPI serves a vanilla JavaScript app; SlimSAM and CLIP run in a browser worker.
 The Python HTTP client is **httpx2**.
 
+## Marketing site
+
+The marketing site is served at `/` from `marketing/index.html`, with its media
+under `marketing/media/` (mounted at `/media`). The demo app lives at `/demo`.
+The marketing page is plain HTML, CSS and JavaScript with no build step. Its
+example videos are YouTube embeds that loop a short moment with captions turned
+off.
+
 ## Run locally
 
 ```bash
@@ -11,7 +19,8 @@ pixi install
 pixi run dev
 ```
 
-Open http://localhost:8000. The bundled video is an 8-second excerpt of
+Open http://localhost:8000 for the marketing site and http://localhost:8000/demo
+for the demo. The bundled video is an 8-second excerpt of
 [Im Getting Married](https://www.youtube.com/watch?v=LegHU2why0Y&t=731s), from
 12:11 to 12:19. Pause and click her wedding dress. It demonstrates an
 **inspired-by** match: adapt its visual details to a supported Arcade product.

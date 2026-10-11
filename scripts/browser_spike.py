@@ -15,7 +15,7 @@ async def main():
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
         async with page.expect_response("**/api/categories"):
-            await page.goto("http://127.0.0.1:8000", wait_until="domcontentloaded")
+            await page.goto("http://127.0.0.1:8000/demo", wait_until="domcontentloaded")
         await page.wait_for_selector("#video-progress:not([hidden])")
         assert await page.locator("#video-progress").get_attribute("data-phase") == "loading"
         assert not await page.locator("#play-toggle").is_disabled()

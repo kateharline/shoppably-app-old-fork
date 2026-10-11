@@ -60,6 +60,14 @@ async def test_bad_image_is_rejected(client, mock_mode):
     assert response.status_code == 422
 
 
+async def test_marketing_site_at_root_and_demo_at_demo(client):
+    home = await client.get("/")
+    assert home.status_code == 200 and "Build a business from your couch" in home.text
+    demo = await client.get("/demo")
+    assert demo.status_code == 200 and 'id="video"' in demo.text
+    assert (await client.get("/media/hero.mp4")).status_code == 200
+
+
 async def test_live_catalog_failure_never_silently_switches_to_mock(client, monkeypatch):
     monkeypatch.setenv("ARCADE_MODE", "live")
     monkeypatch.setattr(server, "_catalog", None)

@@ -48,10 +48,10 @@ async def main():
                 await route.fulfill(json={"status": "succeeded", "mode": "live", "product": {
                     "title": "HTTP submission succeeded", "imageUrl": "/static/demo-product.svg"}})
             else:
-                await route.fulfill(path=ROOT / ("static/index.html" if path == "/" else path.lstrip("/")))
+                await route.fulfill(path=ROOT / ("static/index.html" if path == "/demo" else path.lstrip("/")))
 
         await page.route("http://192.168.122.87:8000/**", respond)
-        await page.goto("http://192.168.122.87:8000", wait_until="domcontentloaded")
+        await page.goto("http://192.168.122.87:8000/demo", wait_until="domcontentloaded")
         assert await page.evaluate("typeof crypto.randomUUID") == "undefined"
         assert not await page.evaluate("isSecureContext")
         await page.wait_for_selector("#overlay:not([hidden])")
