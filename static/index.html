@@ -35,19 +35,17 @@
           <div id="video-empty" class="video-empty" hidden><span class="empty-icon">↗</span><h2>Bring a moment to the studio.</h2><p>The demo clip isn’t ready. Open a local video to start.</p></div>
           <span id="selection-tip" class="selection-tip" hidden>Click a detail you love</span>
           <div id="video-progress" class="video-progress" data-phase="loading" role="status" aria-live="polite" hidden>
-            <div class="video-progress-heading"><span class="video-progress-spinner" aria-hidden="true"></span><strong id="video-progress-title">Preparing image intelligence</strong></div>
+            <div class="video-progress-heading"><strong id="video-progress-title">Loading image intelligence functionality…</strong></div>
             <p id="video-progress-message">Getting ready in the background. You can play the video.</p>
             <progress id="video-progress-bar" max="100" aria-label="Image intelligence loading progress"></progress>
             <span id="video-progress-label">Getting ready in the background</span>
           </div>
         </div>
-        <div class="seek-bar"><input id="seek" type="range" min="0" max="8" step="0.05" value="0" aria-label="Video position"><span id="timestamp">0:00 / 0:08</span></div>
         <div class="video-toolbar">
-          <button id="play-toggle" class="button secondary" type="button">Play video <span>▶</span></button>
-          <span id="video-help" class="video-help">Pause when something catches your eye.</span>
+          <span id="video-help" class="video-help">Click the video to play. Pause to select a detail.</span>
           <label class="file-button">Open video<input id="video-upload" type="file" accept="video/*"></label>
         </div>
-        <div class="model-bar"><span class="status-dot" id="model-dot"></span><span id="model-status" role="status" aria-live="polite">Loading image intelligence functionality…</span><button id="load-models" type="button" class="text-button">Loading…</button></div>
+        <div id="model-bar" class="model-bar" hidden><span class="status-dot" id="model-dot"></span><span id="model-status" role="status" aria-live="polite">Loading image intelligence functionality…</span><button id="load-models" type="button" class="text-button">Loading…</button></div>
         <p class="source-note">Clip from <a href="https://www.youtube.com/watch?v=LegHU2why0Y&t=731s" target="_blank" rel="noopener noreferrer">Im Getting Married ↗</a>. Pause and click her wedding dress to turn its details into a new design.</p>
       </div>
       <aside class="studio-panel" aria-label="Your design">

@@ -1,6 +1,16 @@
 import assert from "node:assert/strict";
 import { requestJson } from "../static/api.mjs";
 import { createRequestId } from "../static/request-id.mjs";
+import { LoadingProgress } from "../static/loading-progress.mjs";
+
+const loading = new LoadingProgress();
+assert.equal(loading.update(0, { file: "encoder", progress: 100 }), 45);
+assert.equal(loading.update(0, { file: "decoder", progress: 10 }), 45);
+assert.equal(loading.finish(0), 50);
+assert.equal(loading.update(1, { file: "classifier", progress: 20 }), 59);
+assert.equal(loading.update(1, { file: "classifier", status: "done" }), 95);
+assert.equal(loading.finish(1), 100);
+console.log("Combined loading: monotonic progress across both models passed");
 
 assert.equal(createRequestId({ randomUUID: () => "native-id" }), "native-id");
 const httpCrypto = { getRandomValues: bytes => globalThis.crypto.getRandomValues(bytes) };

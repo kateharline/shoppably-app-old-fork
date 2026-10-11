@@ -37,14 +37,21 @@ active mode. Live errors never silently switch to a mock result.
 
 ## Try the flow
 
-1. Play the video and pause on a detail. Click its center. For keyboard selection,
+1. Click the video to play, then pause on a detail. Selection activates after
+   pausing; click the detail's center. Use the native video controls to resume.
+   For keyboard selection,
    focus the paused canvas, move with arrow keys, then press Enter.
 2. As soon as the page opens, models load in the background from Hugging Face
    and the library/runtime from jsDelivr. You can play the video during loading.
-   A video overlay shows real download percentages, then frame analysis,
+   One video overlay shows combined loading progress for both models, then frame analysis,
    segmentation and category-matching stages. Inference uses an indeterminate
    indicator because the models do not expose a completion percentage.
-   Subsequent loads use browser caching. **Load tools** retries a failed preload.
+   Subsequent loads reuse model files from browser storage: the built-in Cache
+   API on HTTPS/localhost, and IndexedDB on HTTP LAN addresses. Use the same
+   browser profile, host and port to reuse the cache. Clearing site data removes
+   it; storage limits or blocked storage fall back to downloads. Model sessions
+   still initialize on each page load, and the app/library runtime and Arcade
+   require network access. **Try again** retries a failed preload.
    If you click before loading finishes, that selection waits for the same load.
 3. Review the isolated crop and three product suggestions. Change the category
    or design prompt, then confirm the selection.
@@ -83,7 +90,7 @@ Arcade production API; its IDs are not invented. Rugs and vases are not in that
 catalog, so they should produce inspired-by suggestions.
 
 The wedding-dress clip can be selected with real browser models. A successful
-live Arcade reference-to-product generation from the earlier demo reference is
+live Arcade reference-to-product generation of a creamy white lace drum lampshade inspired by the dress is
 bundled as the labeled cached preview. In headless Chromium on the development machine, WASM frame
 encoding took about 7.8 seconds, mask decoding 0.4 seconds, and classification
 1.6 seconds on the wedding-dress frame; these timings will vary by device. Backend tests (14) and browser

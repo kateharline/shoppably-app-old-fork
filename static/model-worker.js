@@ -1,8 +1,15 @@
 import { SamModel, AutoProcessor, RawImage, Tensor, pipeline, env } from
   "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
 import { objectLabels, suggestCategories } from "./mapping.mjs";
+import { LoadingProgress } from "./loading-progress.mjs";
+import { ModelCache } from "./model-cache.mjs";
 
 env.allowLocalModels = false;
+// Keep the built-in Cache API on HTTPS; HTTP LAN demos use IndexedDB instead.
+if (!env.useBrowserCache) {
+  env.customCache = new ModelCache();
+  env.useCustomCache = true;
+}
 env.backends.onnx.wasm.numThreads = 1;
 let sam, processor, classifier, cachedFrame, processed, embeddings;
 let queue = Promise.resolve();
@@ -10,32 +17,34 @@ let activeRequestId;
 const timings = {};
 const emit = message => self.postMessage(message);
 const status = (message, details = {}) => emit({ id: activeRequestId, type: "status", message, phase: "loading", ...details });
-const progress = prefix => item => {
-  if (item.status === "progress") status(`Downloading the ${prefix.toLowerCase()}…`, { progress: item.progress });
-  else if (item.status === "initiate") status(`Downloading the ${prefix.toLowerCase()}…`);
+let loadingProgress = new LoadingProgress();
+const loadingStatus = value => status("Loading image intelligence functionality…", { progress: value });
+const progress = stage => item => {
+  loadingStatus(loadingProgress.update(stage, item));
 };
 
 async function loadSam() {
-  if (sam) return;
+  if (sam && processor) return;
   const start = performance.now();
-  status("Loading selection model. The first visit downloads and caches model files.");
+  loadingStatus(loadingProgress.value);
   let device = "wasm";
   if (self.navigator.gpu) {
     try { if (await self.navigator.gpu.requestAdapter()) device = "webgpu"; } catch { /* use CPU */ }
   }
   try {
     sam = await SamModel.from_pretrained("Xenova/slimsam-77-uniform", {
-      device, dtype: "fp32", progress_callback: progress("Selection model"),
+      device, dtype: "fp32", progress_callback: progress(0),
     });
   } catch (error) {
     if (device === "wasm") throw error;
-    status("GPU initialization failed. Trying the browser CPU.");
+    loadingStatus(loadingProgress.value);
     device = "wasm";
     sam = await SamModel.from_pretrained("Xenova/slimsam-77-uniform", {
-      device, dtype: "fp32", progress_callback: progress("Selection model"),
+      device, dtype: "fp32", progress_callback: progress(0),
     });
   }
-  processor = await AutoProcessor.from_pretrained("Xenova/slimsam-77-uniform");
+  processor = await AutoProcessor.from_pretrained("Xenova/slimsam-77-uniform", { progress_callback: progress(0) });
+  loadingStatus(loadingProgress.finish(0));
   timings.samLoadMs = Math.round(performance.now() - start);
   timings.device = device;
 }
@@ -44,9 +53,10 @@ async function loadClassifier() {
   if (classifier) return;
   const start = performance.now();
   classifier = await pipeline("zero-shot-image-classification", "Xenova/clip-vit-base-patch32", {
-    device: "wasm", dtype: "q8", progress_callback: progress("Category model"),
+    device: "wasm", dtype: "q8", progress_callback: progress(1),
   });
   timings.clipLoadMs = Math.round(performance.now() - start);
+  loadingStatus(loadingProgress.finish(1));
 }
 
 async function readBlob(blob) {
@@ -59,6 +69,10 @@ async function run(message) {
   activeRequestId = id;
   try {
     if (type === "load") {
+      loadingProgress = new LoadingProgress();
+      if (sam && processor) loadingProgress.finish(0);
+      if (classifier) loadingProgress.finish(1);
+      loadingStatus(loadingProgress.value);
       await loadSam();
       await loadClassifier();
       emit({ id, type: "result", result: { timings } });
