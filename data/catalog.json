@@ -1,0 +1,149 @@
+{
+  "items": [
+    {
+      "categoryId": "0ef267de-f8c2-4a93-89a3-63be809f68e2",
+      "name": "Decorative Pillows",
+      "world": "print"
+    },
+    {
+      "categoryId": "e31ea74b-f8a6-42f1-b005-c67ea65faecf",
+      "name": "Outdoor Decorative Pillows",
+      "world": "print"
+    },
+    {
+      "categoryId": "687b34ae-209d-461d-b681-4b0426400be8",
+      "name": "Scarves",
+      "world": "print"
+    },
+    {
+      "categoryId": "27b5f126-6464-4629-927e-be965be6ad5b",
+      "name": "Ribbon Scarf",
+      "world": "print"
+    },
+    {
+      "categoryId": "c314010b-e15a-4014-a376-9b8f4e973461",
+      "name": "Napkins",
+      "world": "print"
+    },
+    {
+      "categoryId": "4504ea0b-93d6-4280-9368-894a6ef4c783",
+      "name": "Placemats",
+      "world": "print"
+    },
+    {
+      "categoryId": "a8864e59-2dac-41c6-8a5c-559722e5d3e1",
+      "name": "Outdoor Placemats",
+      "world": "print"
+    },
+    {
+      "categoryId": "00215014-e6a4-4494-a66d-ada4854deadb",
+      "name": "Tablecloths",
+      "world": "print"
+    },
+    {
+      "categoryId": "9aeeb74f-f11a-40c6-afd7-4001f0178d3b",
+      "name": "Table Runners",
+      "world": "print"
+    },
+    {
+      "categoryId": "0a17cc22-3030-497e-8d53-d6c593b992ce",
+      "name": "Duvets",
+      "world": "print"
+    },
+    {
+      "categoryId": "f08a20ab-cd71-4065-bd2b-fe9a10ac37f6",
+      "name": "Shams",
+      "world": "print"
+    },
+    {
+      "categoryId": "f2f91b52-4c78-4b10-8185-d34e6611a638",
+      "name": "Quilts",
+      "world": "print"
+    },
+    {
+      "categoryId": "2b810c22-306f-40fd-82ca-b114a15224b0",
+      "name": "Quilted Shams",
+      "world": "print"
+    },
+    {
+      "categoryId": "feab7433-7db7-4b7b-94aa-8a28e5b7f57b",
+      "name": "Drum Lampshades",
+      "world": "print"
+    },
+    {
+      "categoryId": "538c3174-cdb6-40c9-9e7d-283eeeb00937",
+      "name": "Tall Drum Lampshades",
+      "world": "print"
+    },
+    {
+      "categoryId": "ae5b9a9b-4a55-4e70-a2d9-9382a0f9751c",
+      "name": "Rectangular Lampshades",
+      "world": "print"
+    },
+    {
+      "categoryId": "60b9b5bd-89ed-4e20-b871-4af5e838b385",
+      "name": "Pocket Squares",
+      "world": "print"
+    },
+    {
+      "categoryId": "1c97deee-33c9-4738-89f5-1eeade41d3d1",
+      "name": "Curtains",
+      "world": "print"
+    },
+    {
+      "categoryId": "576f2db2-dc4d-4d18-94a3-3f9fd39cd459",
+      "name": "Fabric By The Yard",
+      "world": "print"
+    },
+    {
+      "categoryId": "246045bd-53c9-434f-ac92-9459aa3a07d4",
+      "name": "Floor Pillows",
+      "world": "print"
+    },
+    {
+      "categoryId": "d6f27ba1-a68e-41be-909e-c93b24a479d7",
+      "name": "Tea Towels",
+      "world": "print"
+    },
+    {
+      "categoryId": "23f9c1bf-2fb5-4412-85ba-91cfcf4cba50",
+      "name": "Dainty Diamond Ring",
+      "world": "jewelry"
+    },
+    {
+      "categoryId": "5ff5601a-78a5-4383-8535-4f05a656f491",
+      "name": "Dainty Gemstone Earrings",
+      "world": "jewelry"
+    },
+    {
+      "categoryId": "80624394-d719-4749-99d5-6f8c3d8a15e5",
+      "name": "Rings",
+      "world": "jewelry"
+    },
+    {
+      "categoryId": "a1167c6c-1bd9-45ea-b70e-883393a02bfa",
+      "name": "Stud Earrings",
+      "world": "jewelry"
+    },
+    {
+      "categoryId": "c8882c6d-cf08-4b88-b01e-678ff6828382",
+      "name": "Dainty Gemstone Ring",
+      "world": "jewelry"
+    },
+    {
+      "categoryId": "cb985ad9-3fe0-4163-8aea-3555dbdfaac9",
+      "name": "Pendant Necklace",
+      "world": "jewelry"
+    },
+    {
+      "categoryId": "dcfb2279-aef5-4ab9-b980-9b96626f145f",
+      "name": "Initial Earrings",
+      "world": "jewelry"
+    },
+    {
+      "categoryId": "fd810c00-c58c-4147-a946-f3e4fb5d6939",
+      "name": "Dangle Earrings",
+      "world": "jewelry"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+[workspace]
+name = "shoppably"
+version = "0.1.0"
+description = "Pause a video and create a product inspired by what you see"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64"]
+
+[dependencies]
+python = "3.12.*"
+nodejs = ">=22,<25"
+ffmpeg = ">=7,<9"
+
+[pypi-dependencies]
+fastapi = ">=0.115,<1"
+uvicorn = ">=0.34,<1"
+httpx2 = ">=2.13,<3"
+pillow = ">=11,<13"
+python-multipart = ">=0.0.20,<1"
+python-dotenv = ">=1,<2"
+pytest = ">=8,<10"
+pytest-asyncio = ">=0.25,<2"
+yt-dlp = ">=2025.1"
+playwright = ">=1.50,<2"
+
+[tasks]
+dev = "uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
+test = "pytest -q"
+test-ui = { cmd = "node tests/geometry.test.mjs", depends-on = ["test-requests"] }
+test-requests = "node tests/api.test.mjs"
+video = "python scripts/prepare_video.py"
+spike = "python scripts/arcade_spike.py"
+

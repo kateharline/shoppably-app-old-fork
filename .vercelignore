@@ -1,0 +1,12 @@
+.pixi
+.git
+.env
+.env.*
+artifacts
+tests
+scripts
+__pycache__
+.pytest_cache
+node_modules
+static/catalog.json
+

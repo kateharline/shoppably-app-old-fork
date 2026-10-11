@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Pause a moment. Pick what inspires you. Make it yours with Arcade.">
+  <title>Shoppably — Make the moment yours</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css">
+  <script type="module" src="/static/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="wordmark" href="/" aria-label="Shoppably home"><span class="mark">s</span> shoppably<span class="wordmark-dot">.</span></a>
+    <div class="header-right"><span class="powered">Made possible by Arcade</span><span id="mode" class="pill">Connecting…</span></div>
+  </header>
+  <main>
+    <section class="intro">
+      <div><p class="eyebrow"><span class="tiny-star">✳</span> FROM A MOMENT TO SOMETHING YOURS</p>
+        <h1>See it. Pause it.<br><em>Make it yours.</em></h1>
+      </div>
+      <p class="intro-copy">A color, a pattern, a little detail you love.<br>Pick it from a video and turn that inspiration<br>into a product made just for you.</p>
+    </section>
+    <ol class="steps" aria-label="Creation steps">
+      <li id="step-watch" class="active"><span>01</span> Find your moment</li>
+      <li id="step-pick"><span>02</span> Pick your inspiration</li>
+      <li id="step-create"><span>03</span> Create something new</li>
+    </ol>
+    <section class="workspace" aria-label="Video and product studio">
+      <div class="watch-panel">
+        <div class="panel-heading"><span class="eyebrow">THE INSPIRATION</span><span class="small-label">Wedding dress · 12:11–12:19</span></div>
+        <div id="video-stage" class="video-stage">
+          <video id="video" controls playsinline preload="metadata" poster="/static/demo-poster.jpg" aria-label="Im Getting Married demo video"><source src="/static/demo.mp4" type="video/mp4"></video>
+          <canvas id="overlay" aria-label="Click an object in the paused video" tabindex="0" hidden></canvas>
+          <div id="video-empty" class="video-empty" hidden><span class="empty-icon">↗</span><h2>Bring a moment to the studio.</h2><p>The demo clip isn’t ready. Open a local video to start.</p></div>
+          <span id="selection-tip" class="selection-tip" hidden>Click a detail you love</span>
+          <div id="video-progress" class="video-progress" data-phase="loading" role="status" aria-live="polite" hidden>
+            <div class="video-progress-heading"><span class="video-progress-spinner" aria-hidden="true"></span><strong id="video-progress-title">Preparing image intelligence</strong></div>
+            <p id="video-progress-message">Getting ready in the background. You can play the video.</p>
+            <progress id="video-progress-bar" max="100" aria-label="Image intelligence loading progress"></progress>
+            <span id="video-progress-label">Getting ready in the background</span>
+          </div>
+        </div>
+        <div class="seek-bar"><input id="seek" type="range" min="0" max="8" step="0.05" value="0" aria-label="Video position"><span id="timestamp">0:00 / 0:08</span></div>
+        <div class="video-toolbar">
+          <button id="play-toggle" class="button secondary" type="button">Play video <span>▶</span></button>
+          <span id="video-help" class="video-help">Pause when something catches your eye.</span>
+          <label class="file-button">Open video<input id="video-upload" type="file" accept="video/*"></label>
+        </div>
+        <div class="model-bar"><span class="status-dot" id="model-dot"></span><span id="model-status" role="status" aria-live="polite">Loading image intelligence functionality…</span><button id="load-models" type="button" class="text-button">Loading…</button></div>
+        <p class="source-note">Clip from <a href="https://www.youtube.com/watch?v=LegHU2why0Y&t=731s" target="_blank" rel="noopener noreferrer">Im Getting Married ↗</a>. Pause and click her wedding dress to turn its details into a new design.</p>
+      </div>
+      <aside class="studio-panel" aria-label="Your design">
+        <div class="panel-heading"><span class="eyebrow">YOUR CREATION</span><span class="sparkle">✳</span></div>
+        <div id="studio-empty" class="studio-empty"><div class="empty-orbit"><span>✳</span></div><h2>Good things start<br>with a little inspiration.</h2><p>Pause the video, then click an object.<br>We’ll find a few things you can make.</p></div>
+        <form id="design-form" hidden>
+          <div class="selection-card"><img id="crop-preview" alt="Your selected reference"><div><span class="small-label">SELECTED DETAIL</span><h2 id="object-name">Your inspiration</h2><p id="attributes"></p><div id="color-swatches" class="swatches" aria-label="Reference colors"></div></div></div>
+          <p id="match-note" class="match-note"></p>
+          <label class="field-label" for="category">MAKE IT INTO</label>
+          <div id="suggestions" class="suggestions" aria-label="Suggested products"></div>
+          <select id="category" name="category" required></select>
+          <label class="field-label" for="prompt">YOUR DESIGN PROMPT <span>Make it your own</span></label>
+          <textarea id="prompt" maxlength="1000" rows="4" required></textarea>
+          <label class="confirm"><input id="confirm" type="checkbox" required><span>I’ve reviewed the reference and product category.</span></label>
+          <button id="create" class="button primary" type="submit">Create with Arcade <span>↗</span></button>
+          <button id="clear-selection" class="text-button reset-selection" type="button">Pick a different detail</button>
+        </form>
+        <div id="generation" class="generation" hidden role="status" aria-live="polite"><div id="generation-spinner" class="spinner"></div><h2 id="generation-title">Making your inspiration real.</h2><p id="generation-message">Arcade is designing your pattern and building a product preview.</p><p id="generation-job"></p><button id="resume-poll" type="button" class="button secondary" hidden>Check again</button></div>
+        <div id="result" class="result" hidden><span id="result-mode" class="pill"></span><img id="result-image" alt="Product preview"><h2 id="result-title"></h2><p id="result-detail"></p><button id="new-design" class="button secondary" type="button">Make another design <span>↗</span></button></div>
+        <div id="error-box" class="error-box" role="alert" hidden><p id="error-message"></p><button id="retry" type="button" class="text-button" hidden>Retry creation</button></div>
+        <button id="demo-preview" class="text-button demo-link" type="button">See a cached demo preview ↗</button>
+      </aside>
+    </section>
+    <footer><span>A little inspiration. A whole new possibility.</span><span>PAUSE · PICK · CREATE</span></footer>
+    <details class="diagnostics"><summary>Browser performance</summary><pre id="timings">Select an object to measure model loading and inference.</pre></details>
+  </main>
+</body>
+</html>
+

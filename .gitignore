@@ -1,0 +1,11 @@
+.pixi/
+__pycache__/
+.pytest_cache/
+.env
+.env.*
+!.env.example
+artifacts/
+static/catalog.json
+node_modules/
+.vercel/
+
