@@ -5,6 +5,7 @@ import re
 import time
 from pathlib import Path
 from typing import Annotated
+from urllib.parse import quote
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
@@ -131,7 +132,8 @@ async def demo_preview():
     if cached.exists() and (ROOT / "static" / "cached-product.jpg").exists():
         product = json.loads(cached.read_text())
         return {"mode": "cached", "product": {"title": product["title"],
-                "imageUrl": "/static/cached-product.jpg"}}
+                "description": product.get("description", ""),
+                "imageUrl": f"/static/cached-product.jpg?v={quote(product.get('productId', 'demo'), safe='')}"}}
     return {"mode": "mock", "product": {"title": "Illustrative demo pillow",
             "imageUrl": "/static/demo-product.svg"}}
 

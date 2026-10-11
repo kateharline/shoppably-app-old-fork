@@ -18,12 +18,12 @@ async def main():
             await page.goto("http://127.0.0.1:8000", wait_until="domcontentloaded")
         await page.wait_for_selector("#video-progress:not([hidden])")
         assert await page.locator("#video-progress").get_attribute("data-phase") == "loading"
-        assert not await page.locator("#play-toggle").is_disabled()
+        assert await page.locator("#play-toggle").count() == 0
         await page.screenshot(path="artifacts/loading-desktop.png", full_page=True)
         await page.wait_for_function("document.querySelector('#video').readyState >= 2")
-        await page.locator("#play-toggle").click()
+        await page.locator("#video").click(position={"x": 50, "y": 50})
         await page.wait_for_function("!document.querySelector('#video').paused")
-        await page.locator("#play-toggle").click()
+        await page.locator("#video").click(position={"x": 50, "y": 50})
         await page.wait_for_selector("#overlay:not([hidden])")
         await page.screenshot(path="artifacts/studio-desktop.png", full_page=True)
         box = await page.locator("#overlay").bounding_box()

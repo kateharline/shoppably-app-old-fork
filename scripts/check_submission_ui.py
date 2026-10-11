@@ -17,6 +17,12 @@ async def main():
           Object.defineProperty(crypto, 'randomUUID', {value: undefined});
           window.Worker = class {
             postMessage(data) {
+              if (data.type === 'load') {
+                [10,50,65,95].forEach((progress,i) => setTimeout(() => this.onmessage({data:{
+                  id:data.id,type:'status',phase:'loading',message:'Loading',progress}}),i*400));
+                setTimeout(() => this.onmessage({data:{id:data.id,result:{}}}),1800);
+                return;
+              }
               let result = {};
               if (data.type === 'segment') {
                 const mask = new Uint8Array(data.width * data.height);
@@ -54,6 +60,31 @@ async def main():
         await page.goto("http://192.168.122.87:8000", wait_until="domcontentloaded")
         assert await page.evaluate("typeof crypto.randomUUID") == "undefined"
         assert not await page.evaluate("isSecureContext")
+        await page.wait_for_selector("#video-progress:not([hidden])")
+        assert not await page.locator("#model-bar").is_visible()
+        assert await page.locator("progress:visible").count() == 1
+        title = await page.locator("#video-progress-title").inner_text()
+        await page.wait_for_function("document.querySelector('#video-progress-bar').value >= 65")
+        assert await page.locator("#video-progress-title").inner_text() == title
+        assert await page.locator("progress:visible").count() == 1
+        await page.wait_for_selector("#video-progress[hidden]", state="attached")
+        assert await page.locator("#model-bar").is_visible()
+        assert await page.locator("#play-toggle").count() == 0
+        assert not await page.locator("#overlay").is_visible()
+        await page.wait_for_function("document.querySelector('#video').readyState >= 2")
+        await page.locator("#video").click(position={"x": 50, "y": 50})
+        await page.wait_for_function("!document.querySelector('#video').paused")
+        assert not await page.locator("#overlay").is_visible()
+        await page.locator("#video").click(position={"x": 50, "y": 50})
+        await page.wait_for_function("document.querySelector('#video').paused")
+        await page.wait_for_selector("#overlay:not([hidden])")
+        # The selection layer must leave the video's own play control clickable.
+        video_box = await page.locator("#video").bounding_box()
+        await page.mouse.move(video_box["x"] + 32, video_box["y"] + video_box["height"] - 32)
+        await page.locator("#video").click(position={"x": 32, "y": video_box["height"] - 32})
+        await page.wait_for_function("!document.querySelector('#video').paused", timeout=5000)
+        await page.wait_for_selector("#overlay", state="hidden")
+        await page.locator("#video").click(position={"x": 50, "y": 50})
         await page.wait_for_selector("#overlay:not([hidden])")
         await page.locator("#overlay").click(position={"x": 50, "y": 50})
         await page.wait_for_selector("#design-form:not([hidden])")
@@ -79,7 +110,7 @@ async def main():
         assert len(submitted) == 2
         assert not errors, errors
         await browser.close()
-        print("HTTP browser submission passed: UUID fallback, stable retry ID, setup-error recovery")
+        print("Browser checks passed: single combined loader, UUID fallback, stable retry ID, setup-error recovery")
 
 
 if __name__ == "__main__":

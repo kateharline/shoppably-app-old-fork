@@ -2,11 +2,13 @@
 import argparse
 import asyncio
 import json
+import io
 import sys
 import uuid
 from pathlib import Path
 
 import httpx2
+from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from services.arcade_client import ArcadeClient
@@ -18,6 +20,8 @@ async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--reference", help="Image path; supplying it starts one real generation")
     parser.add_argument("--job", help="Resume polling a previously created job")
+    parser.add_argument("--category", default="Decorative Pillows", help="Arcade production category name")
+    parser.add_argument("--prompt", default="Design a decorative pillow inspired by the reference image. Preserve its colors and visual character as a printable textile pattern.")
     args = parser.parse_args()
     load_config()
     client = ArcadeClient()
@@ -32,10 +36,10 @@ async def main():
     if args.job:
         job_id = args.job
     else:
-        category = next(c for c in categories if c["name"] == "Decorative Pillows")
+        category = next(c for c in categories if c["name"] == args.category and c["world"] == "print")
         data = normalize_reference(Path(args.reference).read_bytes())
         job = await client.create(data, category["categoryId"],
-            "Design a decorative pillow inspired by the reference image. Preserve its colors and visual character as a printable textile pattern.",
+            args.prompt,
             f"spike-{uuid.uuid4()}")
         job_id = job["jobId"]
         Path("artifacts/spike-job.json").write_text(json.dumps({"jobId": job_id}))
@@ -48,8 +52,13 @@ async def main():
             async with httpx2.AsyncClient(timeout=45, follow_redirects=True) as http:
                 image = await http.get(product["images"][0]["url"] if product["images"] else product["imageUrl"])
                 image.raise_for_status()
-            Path("static/cached-product.jpg").write_bytes(normalize_reference(image.content))
-            Path("static/cached-product.json").write_text(json.dumps({"title": product["title"], "productId": product["productId"]}, indent=2))
+            # Generated previews can exceed the user-reference upload size limit.
+            with Image.open(io.BytesIO(image.content)) as preview:
+                preview = preview.convert("RGB")
+                preview.thumbnail((1024, 1024))
+                preview.save("static/cached-product.jpg", "JPEG", quality=90, optimize=True)
+            Path("static/cached-product.json").write_text(json.dumps({"title": product["title"], "productId": product["productId"],
+                "category": args.category, "description": args.prompt}, indent=2))
             print("Real Arcade product succeeded; cached preview is ready.")
             return
         if attempt % 6 == 0:

@@ -10,6 +10,7 @@ let selection, cropBlob, cropUrl, uploadUrl, requestId, lastJob, pollVersion = 0
 const pending = new Map();
 let rpcId = 0;
 let modelLoadPromise = null, modelsReady = false;
+let selectionEnabled = false;
 
 function hide(id, value = true) { $(id).hidden = value; }
 function status(message, state = "busy", details = {}) {
@@ -18,6 +19,7 @@ function status(message, state = "busy", details = {}) {
   }
   $("model-status").textContent = message;
   $("model-dot").className = `status-dot ${state}`;
+  $("model-bar").hidden = state === "busy";
   if (state !== "busy") {
     hide("video-progress");
     if (state === "ready" && video.paused && !selection && !overlay.hidden) hide("selection-tip", false);
@@ -27,10 +29,11 @@ function status(message, state = "busy", details = {}) {
   const phase = details.phase || "loading";
   $("video-progress").dataset.phase = phase;
   $("video-progress-title").textContent = {
-    loading: "Preparing image intelligence", encoding: "Analyzing your paused frame",
+    loading: "Loading image intelligence functionality…", encoding: "Analyzing your paused frame",
     segmenting: "Selecting your object", classifying: "Finding product matches",
   }[phase];
-  $("video-progress-message").textContent = message;
+  $("video-progress-message").textContent = phase === "loading"
+    ? "You can play the video while we get ready." : message;
   const progress = $("video-progress-bar");
   if (Number.isFinite(details.progress)) {
     progress.value = Math.max(0, Math.min(100, details.progress));
@@ -38,7 +41,7 @@ function status(message, state = "busy", details = {}) {
   } else {
     progress.removeAttribute("value");
     $("video-progress-label").textContent = phase === "loading"
-      ? "You can play the video while we get ready."
+      ? "Loading…"
       : "Working on your selection…";
   }
   hide("video-progress", false);
@@ -90,7 +93,7 @@ function rpc(type, data = {}) {
 function loadModels() {
   if (modelsReady) return Promise.resolve();
   if (modelLoadPromise) return modelLoadPromise;
-  status("Loading image intelligence functionality…");
+  status("Loading image intelligence functionality…", "busy", { progress: 0 });
   $("load-models").textContent = "Loading…";
   $("load-models").disabled = true;
   modelLoadPromise = rpc("load").then(() => {
@@ -138,7 +141,7 @@ function resetSelection() {
 }
 
 function capture() {
-  if (!video.videoWidth || video.readyState < 2 || !video.paused) return;
+  if (!selectionEnabled || !video.videoWidth || video.readyState < 2 || !video.paused) return;
   frame.width = video.videoWidth; frame.height = video.videoHeight;
   frame.getContext("2d").drawImage(video, 0, 0);
   overlay.width = frame.width; overlay.height = frame.height;
@@ -152,38 +155,38 @@ function capture() {
   $("step-pick").classList.add("active");
 }
 video.addEventListener("loadedmetadata", () => {
-  hide("video-empty"); layoutOverlay(); $("seek").max = video.duration;
+  hide("video-empty"); layoutOverlay();
 });
 video.addEventListener("loadeddata", capture);
 video.addEventListener("pause", () => {
-  $("play-toggle").textContent = "Play video ▶"; capture();
+  selectionEnabled = true;
+  capture();
 });
 video.addEventListener("seeked", capture);
 video.addEventListener("play", () => {
+  selectionEnabled = false;
   frameId++;
   hide("overlay"); hide("selection-tip");
   if (!modelLoadPromise) hide("video-progress");
-  $("play-toggle").textContent = "Pause & pick ❚❚";
   $("video-help").textContent = "Pause when something catches your eye.";
 });
 video.addEventListener("error", () => {
   hide("video-empty", false); hide("overlay"); hide("selection-tip");
   $("video-help").textContent = "Open a local video to start.";
 });
-$("play-toggle").addEventListener("click", async () => {
+video.addEventListener("click", async event => {
+  // Leave the native playback controls available beneath the selection canvas.
+  const rect = video.getBoundingClientRect();
+  if (event.clientY >= rect.bottom - 48) return;
+  event.preventDefault();
   if (!video.paused) video.pause();
   else try { await video.play(); } catch { error("The video could not play. Try opening a local MP4."); }
-});
-$("seek").addEventListener("input", () => { video.pause(); video.currentTime = Number($("seek").value); });
-const formatTime = value => `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, "0")}`;
-video.addEventListener("timeupdate", () => {
-  $("seek").value = video.currentTime;
-  $("timestamp").textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration || 8)}`;
 });
 $("video-upload").addEventListener("change", () => {
   const file = $("video-upload").files[0];
   if (!file || creating) return;
   video.pause(); resetSelection();
+  selectionEnabled = false; hide("overlay"); hide("selection-tip");
   if (uploadUrl) URL.revokeObjectURL(uploadUrl);
   uploadUrl = URL.createObjectURL(file); video.src = uploadUrl; video.removeAttribute("poster"); video.load();
 });
@@ -315,7 +318,7 @@ function showProduct(product, mode) {
   $("result-mode").classList.toggle("live", mode === "live");
   $("result-detail").textContent = mode === "live"
     ? (product.selectionLabel || "Your reference-inspired product is ready.")
-    : "This is a demo example. It was not generated from your current selection.";
+    : `${product.description ? product.description + " " : ""}This is a demo example. It was not generated from your current selection.`;
   $("create").disabled = false;
   $("video-upload").disabled = false;
 }
