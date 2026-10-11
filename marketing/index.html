@@ -116,6 +116,16 @@
     position: absolute; right: var(--gutter); top: 88px; z-index: 3; font: 700 11px/1 var(--mono); letter-spacing: .08em;
     color: #fff; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.3); padding: 8px 12px; border-radius: 999px; cursor: pointer;
   }
+  /* intro film: plays once with its own captions, then hands off to the loop and the hero copy */
+  .hero .film { z-index: 1; transition: opacity 1.2s ease; }
+  .hero::after { transition: opacity 1.2s ease; }
+  .hero-inner { transition: opacity 1.2s ease .4s; }
+  .hero.film-on::after { opacity: 0; }
+  .hero.film-on .hero-inner { opacity: 0; visibility: hidden; transition: none; }
+  .hero:not(.film-on) .film { opacity: 0; pointer-events: none; }
+  @media (max-aspect-ratio: 4/3) { .hero .film { object-fit: contain; } }  /* keep the film's centered captions on screen */
+  .film-skip { top: 128px; }
+  .hero:not(.film-on) .film-skip { display: none; }
 
   /* ---------- sections ---------- */
   section { padding: clamp(80px, 12vw, 150px) 0; }
@@ -134,29 +144,8 @@
   }
 
   /* frozen frame demo */
-  .freeze { margin-top: clamp(48px, 7vw, 88px); position: relative; border-radius: var(--radius); overflow: hidden; background: var(--night); }
-  .freeze img { width: 100%; height: auto; }
-  .freeze .seg {
-    position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 1600 / 894; height: auto;
-    filter: drop-shadow(0 0 10px rgba(63,169,245,.8)); opacity: 0; transition: opacity .6s ease;
-  }
-  .freeze .prompt {
-    position: absolute; right: 3%; bottom: 7%; width: min(360px, 44%);
-    background: rgba(244,243,238,.96); color: var(--ink); border-radius: 14px; padding: 16px 16px 14px;
-    box-shadow: 0 20px 50px rgba(0,0,0,.35); display: grid; gap: 12px;
-    opacity: 0; transform: translateY(14px); transition: opacity .5s ease .5s, transform .5s ease .5s;
-  }
-  .freeze.on .seg { opacity: 1; animation: segpulse 2.4s ease-in-out .6s infinite; }
-  @keyframes segpulse { 50% { filter: drop-shadow(0 0 3px rgba(63,169,245,.5)); } }
-  .freeze.on .prompt { opacity: 1; transform: none; }
-  .prompt .label { font: 600 10px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
-  .prompt .q { font: 700 15px/1.35 var(--mono); min-height: 2.7em; }
-  .prompt .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); }
-  .prompt .go { background: var(--ink); color: #fff; border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 13px; display: inline-flex; gap: 8px; align-items: center; }
-  .prompt .go::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--chartreuse); }
-  @media (max-width: 640px) {
-    .freeze .prompt { position: static; width: auto; margin: 0; border-radius: 0; transform: none; opacity: 1; box-shadow: none; }
-  }
+  .freeze { margin-top: clamp(48px, 7vw, 88px); position: relative; border-radius: var(--radius); overflow: hidden; background: var(--night); container-type: inline-size; }
+  .freeze > img { width: 100%; height: auto; }
 
   /* live demo */
   .demo-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 6vw, 88px); align-items: end; margin-bottom: clamp(40px, 5vw, 64px); }
@@ -183,41 +172,60 @@
   .ex-media { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; background: var(--night); }
   .ex-media video, .ex-media img { width: 100%; height: 100%; object-fit: cover; }
   .ex-media .tag { z-index: 4; }
-  .sel-outline { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; overflow: visible; }
-  .sel-outline path {
-    fill: url(#selHatch); fill-opacity: 0; stroke: var(--signal); stroke-width: 4; stroke-linejoin: round;
-    stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 6px rgba(63,169,245,.9));
-    transition: stroke-dashoffset 1s cubic-bezier(.6,0,.3,1), fill-opacity .4s ease .7s;
+  /* neon selection, matched to the film's overlay (edit/overlay_source/overlay.html) */
+  .ex-media.sel { container-type: inline-size; }
+  .nsel { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+  .nsel svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+  .nc-card {
+    position: absolute; container-type: inline-size; background: rgba(244,243,238,.96); border-radius: 4.6cqw; overflow: hidden;
+    box-shadow: 0 18px 50px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.5) inset; color: var(--ink); font-family: var(--sans); opacity: 0;
   }
-  .ex-media.outlined .sel-outline path { stroke-dashoffset: 0; fill-opacity: 1; }
-  .sel-tap { position: absolute; left: var(--tx); top: var(--ty); z-index: 3; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px var(--signal); opacity: 0; transform: scale(.4); pointer-events: none; }
-  .sel-tap::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid #fff; opacity: 0; }
-  .ex-media.tap .sel-tap { animation: tapin .45s cubic-bezier(.3,1.6,.5,1) forwards; }
-  .ex-media.tap .sel-tap::after { animation: ripple .9s ease-out .1s; }
-  .ex-media.outlined .sel-tap { opacity: 0 !important; transition: opacity .4s ease .6s; animation: none; }
-  @keyframes tapin { to { opacity: 1; transform: scale(1); } }
-  @keyframes ripple { from { opacity: .9; transform: scale(1); } to { opacity: 0; transform: scale(3.2); } }
-  .sel-card {
-    position: absolute; z-index: 3; background: rgba(244,243,238,.97); color: var(--ink); border-radius: 12px; padding: 12px 14px;
-    box-shadow: 0 14px 34px rgba(0,0,0,.35); display: grid; gap: 6px; width: min(240px, 62%);
-    opacity: 0; transform: translateY(10px); transition: opacity .4s ease, transform .4s ease; pointer-events: none;
-  }
-  .card-r .sel-card { right: 5%; top: 30%; }
-  .card-b .sel-card { left: 5%; bottom: 5%; }
-  .ex-media.carded .sel-card { opacity: 1; transform: none; }
-  .sel-k { font: 600 10px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); display: flex; gap: 6px; align-items: center; }
-  .sel-k::before { content: ""; width: 8px; height: 8px; border-radius: 2px; border: 2px solid var(--signal); }
-  .sel-t { font: 700 15px/1.2 var(--mono); }
-  .sel-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
-  .sel-chips span { font-size: 11px; font-weight: 600; padding: 5px 9px; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
-  .sel-chips span:first-child { background: var(--chartreuse); border-color: var(--chartreuse); }
+  .ex-media .nc-card { width: 60%; bottom: 4%; }
+  .ex-media .nc-card.r { right: 4%; } .ex-media .nc-card.l { left: 4%; }
+  .freeze .nc-card { width: 34%; right: 6%; bottom: 14%; }
+  @container (max-width: 420px) { .ex-media .nc-card { width: 86%; } .ex-media .nc-card.r { right: 7%; } .ex-media .nc-card.l { left: 7%; } }
+  @container (max-width: 700px) { .freeze .nc-card { position: relative; right: auto; bottom: auto; width: 100%; border-radius: 0; box-shadow: none; } .freeze .nc-lead { display: none; } }
+  .nc-small, .nc-big { position: absolute; inset: 0; }
+  .nc-big { opacity: 0; }
+  .nc-eyebrow { font: 700 2.3cqw/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+  .nc-small .nc-eyebrow { position: absolute; left: 4.7cqw; top: 4.4cqw; }
+  .nc-prompt { position: absolute; left: 4.7cqw; right: 4.7cqw; top: 9.5cqw; font: 700 3.6cqw/1.3 var(--mono); white-space: nowrap; overflow: hidden; }
+  .nc-cursor { display: inline-block; width: .55em; height: .95em; margin-left: .06em; vertical-align: -.12em; background: var(--ink); }
+  .nc-foot { position: absolute; left: 4.7cqw; bottom: 5.5cqw; font: 500 2.7cqw/1 var(--sans); color: var(--ink-2); white-space: nowrap; }
+  .nc-btn { position: absolute; display: inline-flex; align-items: center; gap: 1.9cqw; padding: 2cqw 3.5cqw; border-radius: 999px; background: var(--ink); color: var(--bg); font: 600 2.9cqw/1 var(--sans); white-space: nowrap; }
+  .nc-btn .dot { width: 1.7cqw; height: 1.7cqw; border-radius: 50%; background: var(--chartreuse); }
+  .nc-make { right: 3.5cqw; bottom: 3.2cqw; }
+  .nc-bar { position: absolute; left: 0; bottom: 0; height: .9cqw; width: 0; background: var(--chartreuse); box-shadow: 0 0 2cqw rgba(220,235,58,.9); }
+  .nc-big > .nc-eyebrow { position: absolute; left: 5.2cqw; top: 5cqw; }
+  .nc-x { position: absolute; right: 5.2cqw; top: 3.4cqw; font: 400 4.2cqw/1 var(--sans); color: var(--ink-3); }
+  .nc-thumb { position: absolute; left: 5.2cqw; top: 11.3cqw; width: 26.6cqw; height: 20.2cqw; border-radius: 2cqw; background: var(--bg-2); display: grid; place-items: center; overflow: hidden; }
+  .nc-thumb img { max-width: 88%; max-height: 88%; filter: drop-shadow(0 1cqw 1.4cqw rgba(0,0,0,.25)); }
+  .nc-info { position: absolute; left: 34.7cqw; right: 5.2cqw; top: 12.1cqw; }
+  .nc-title { font: 600 4.2cqw/1.1 var(--sans); }
+  .nc-sub { font: 400 2.4cqw/1.4 var(--mono); color: var(--ink-2); margin-top: 1.3cqw; }
+  .nc-chips { margin-top: 2.2cqw; display: flex; gap: 1.4cqw; flex-wrap: wrap; }
+  .nc-chips span { padding: 1.4cqw 2.4cqw; border-radius: 999px; font: 700 2.4cqw/1 var(--mono); background: var(--chartreuse); }
+  .nc-price { position: absolute; left: 5.2cqw; right: 5.2cqw; top: 36.3cqw; }
+  .nc-ph { display: flex; justify-content: space-between; align-items: baseline; }
+  .nc-ph .nc-eyebrow { font-size: 2.4cqw; }
+  .nc-pv { font: 700 4.7cqw/1 var(--mono); }
+  .nc-track { position: relative; height: 1.3cqw; border-radius: 1cqw; background: var(--bg-2); margin-top: 2.7cqw; }
+  .nc-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 20%; border-radius: 1cqw; background: var(--chartreuse); }
+  .nc-knob { position: absolute; top: 50%; left: 20%; width: 4.5cqw; height: 4.5cqw; margin: -2.25cqw 0 0 -2.25cqw; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 .65cqw rgba(220,235,58,.55); }
+  .nc-rows { position: absolute; left: 5.2cqw; right: 5.2cqw; top: 51.6cqw; }
+  .nc-row { display: flex; justify-content: space-between; font: 400 2.4cqw/1 var(--mono); color: var(--ink-2); padding: 1.75cqw 0; border-top: 1px solid var(--line); }
+  .nc-row b { color: var(--ink); font-weight: 700; }
+  .nc-cta { left: 5.2cqw; right: 5.2cqw; bottom: 4.5cqw; justify-content: center; padding: 3.4cqw 0; font-size: 3.7cqw; }
+  .nc-cta .dot { width: 2.1cqw; height: 2.1cqw; }
   .ex-media .tag {
     position: absolute; left: 14px; top: 14px; z-index: 2; font: 700 11px/1 var(--mono); color: #fff;
     background: rgba(0,0,0,.45); padding: 7px 10px; border-radius: 999px; backdrop-filter: blur(6px);
   }
   .ex-copy { display: grid; gap: 18px; }
   .ex-copy .num { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px; color: var(--ink-2); }
-  .ex-copy blockquote { margin: 6px 0 0; padding-left: 16px; border-left: 3px solid var(--chartreuse); font: 700 16px/1.45 var(--mono); }
+  .ex-copy blockquote { margin: 6px 0 0; padding: 14px 16px; border-radius: 12px; background: #fff; box-shadow: 0 1px 0 var(--line); font: 700 16px/1.45 var(--mono); display: flex; gap: 10px; align-items: baseline; min-height: 3.2em; }
+  .ex-copy blockquote::before { content: "›"; color: var(--ink-3); }
+  .ex-copy blockquote .bq-cursor { display: inline-block; width: .55em; height: 1em; margin-left: 2px; vertical-align: -.15em; background: var(--ink); animation: blink 1s steps(1) infinite; }
   .ex-copy .meta { font-size: 13px; color: var(--ink-3); }
   .ex-copy .meta a { color: var(--ink-2); }
   @media (max-width: 820px) {
@@ -249,6 +257,9 @@
   .ticker-track span { font: 700 clamp(22px, 3vw, 34px)/1 var(--mono); letter-spacing: -0.02em; white-space: nowrap; padding: 0 22px; display: inline-flex; align-items: center; gap: 44px; }
   .ticker-track span::after { content: "✳"; color: var(--chartreuse); }
   @keyframes tick { to { transform: translateX(-50%); } }
+  .ticker.alt { margin-top: 0; background: var(--chartreuse); color: var(--ink); }
+  .ticker.alt .ticker-track { animation-direction: reverse; animation-duration: 44s; }
+  .ticker.alt .ticker-track span::after { color: var(--ink); }
   @media (max-width: 820px) { .aud { grid-template-columns: 1fr; } .aud-card { min-height: 0; } }
 
   /* economics */
@@ -307,6 +318,12 @@
   .proj-chart .total { font: 700 13px var(--mono); fill: var(--ink); }
   .proj-chart .rev { font: 700 12px var(--mono); fill: var(--ink); }
   .proj-chart .bar rect { transition: opacity .2s ease; }
+  .proj-chart .trend { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1) .9s; }
+  .proj-chart.drawn .trend { stroke-dashoffset: 0; }
+  .proj-chart .tdot { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(.4); transition: opacity .3s ease, transform .45s cubic-bezier(.3,1.6,.5,1); }
+  .proj-chart.drawn .tdot { opacity: 1; transform: none; }
+  .proj-chart .tdot circle { fill: var(--chartreuse); stroke: var(--ink); stroke-width: 2.5; }
+  .proj-chart .tdot text { font: 700 14px var(--mono); fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 5px; }
   .proj-chart .bar.dim rect { opacity: .35; }
   .proj-chart .hit { fill: transparent; cursor: default; }
   .proj-tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 12px 14px; font-size: 13px; min-width: 240px; white-space: nowrap; box-shadow: 0 12px 30px rgba(0,0,0,.25); opacity: 0; transform: translate(-50%, calc(-100% - 12px)); transition: opacity .15s ease; z-index: 5; }
@@ -398,28 +415,33 @@
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="selHatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="12" height="12" fill="rgba(63,169,245,.12)"/><line x1="0" y1="0" x2="0" y2="12" stroke="#3FA9F5" stroke-width="2.5" stroke-opacity=".55"/></pattern></defs></svg>
 
 <nav class="nav" id="nav">
   <div class="wrap">
     <a class="wordmark" href="#top" aria-label="shoppab.ly home">shoppab<span class="dot">.</span>ly</a>
     <div class="nav-links">
       <a href="#how">How it works</a>
-      <a href="#demo">Live demo</a>
       <a href="#examples">Examples</a>
       <a href="#economics">Economics</a>
       <a href="#roadmap">Roadmap</a>
+      <a href="#demo">Live demo</a>
     </div>
     <a class="btn" href="/demo">Try the demo</a>
   </div>
 </nav>
 
-<header class="hero" id="top">
+<header class="hero film-on" id="top">
   <img class="poster" src="media/hero-poster.jpg" alt="" aria-hidden="true">
-  <video id="heroVideo" autoplay muted loop playsinline preload="auto" poster="media/hero-poster.jpg">
+  <video id="heroVideo" muted loop playsinline preload="auto" poster="media/hero-poster.jpg">
     <source src="media/hero.mp4" type="video/mp4">
   </video>
+  <video class="film" id="heroFilm" autoplay muted playsinline preload="auto" poster="media/film-poster.jpg"
+         aria-label="shoppab.ly film: a girl taps her cartoon's cape, orders it, and it arrives the next morning">
+    <source src="media/film.mp4" type="video/mp4">
+  </video>
+  <noscript><style>.hero.film-on .hero-inner { opacity: 1; visibility: visible; } .hero .film { display: none; }</style></noscript>
   <button class="sound" id="pauseHero" type="button" aria-pressed="false">❚❚ PAUSE</button>
+  <button class="sound film-skip" id="skipFilm" type="button">SKIP ›</button>
   <div class="hero-inner">
     <div class="wrap">
       <div class="typed" aria-live="polite"><span id="typed"></span><span class="caret"></span></div>
@@ -459,45 +481,9 @@
       </div>
     </div>
 
-    <figure class="freeze reveal" id="freeze" style="margin-left:0;margin-right:0;margin-bottom:0">
+    <figure class="freeze reveal" id="freeze" data-sel="cape" style="margin-left:0;margin-right:0;margin-bottom:0">
       <img src="media/frozen.jpg" alt="A frozen black and white cartoon of a superhero dog on a vintage TV, with the dog's cape selected">
-      <svg class="seg" viewBox="0 0 1600 894" preserveAspectRatio="none" aria-hidden="true">
-        <defs><pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="#3FA9F5" stroke-width="2.5" stroke-opacity=".7"/></pattern></defs>
-        <path d="M498 303 L522 282 L548 262 L580 240 L612 219 L628 212 L620 230 L652 224 L688 226 L712 236 L690 252 L662 270 L632 288 L604 300 L574 312 L546 322 L518 330 L500 322 Z" fill="url(#hatch)" stroke="#3FA9F5" stroke-width="3.5" stroke-linejoin="round"/>
-      </svg>
-      <div class="prompt" aria-hidden="true">
-        <div class="label">Selection · cape</div>
-        <div class="q" id="promptText"></div>
-        <div class="row"><span>Est. from $24 · ships in 2 days</span><span class="go">Make it</span></div>
-      </div>
     </figure>
-  </div>
-</section>
-
-<section class="demo" id="demo">
-  <div class="wrap">
-    <div class="demo-head reveal">
-      <div class="section-head" style="margin:0">
-        <div class="eyebrow">Live platform demo</div>
-        <h2>Try it yourself.</h2>
-      </div>
-      <div class="demo-copy">
-        <p class="lede">This is the working product. Play the clip, pause on her wedding dress and click it. The dress is cut out of the frame right in your browser, matched to products Arcade can make, and turned into a design you can order.</p>
-        <ul class="demo-points">
-          <li><span class="chip">01</span>Segmentation runs on your device, nothing uploads until you create</li>
-          <li><span class="chip">02</span>Suggestions come from Arcade's real product catalog</li>
-          <li><span class="chip">03</span>Edit the prompt, confirm, and create with Arcade</li>
-        </ul>
-        <div class="hero-ctas"><a class="btn" href="/demo"><span class="dot"></span>Open the live demo</a></div>
-      </div>
-    </div>
-    <div class="demo-frame reveal" id="demoFrame">
-      <div class="demo-bar"><span></span><span></span><span></span><em>shoppab.ly/demo</em></div>
-      <button class="demo-stage" id="demoLaunch" type="button" aria-label="Launch the live demo on this page">
-        <img src="/static/demo-poster.jpg" alt="" loading="lazy">
-        <span class="demo-play"><span class="dot"></span>Launch the demo here</span>
-      </button>
-    </div>
   </div>
 </section>
 
@@ -509,53 +495,44 @@
     </div>
 
     <article class="ex reveal">
-      <div class="ex-media sel card-r" data-freeze="4.5" style="--tx:44.7%;--ty:65.3%">
+      <div class="ex-media sel" data-freeze="1.2" data-sel="dress">
         <video muted playsinline preload="metadata" poster="media/ex-dress.jpg" data-still="media/ex-dress-still.jpg" aria-label="Isabel Paige walking at sunset in the dress she made"><source src="media/ex-dress.mp4" type="video/mp4"></video>
-        <svg class="sel-outline" viewBox="0 0 720 720" aria-hidden="true"><path pathLength="1" d="M324 562 L312 560 L304 554 L290 560 L267 560 L258 552 L258 532 L272 477 L272 467 L276 457 L276 443 L280 438 L280 433 L284 419 L280 408 L278 383 L282 370 L290 356 L294 356 L298 362 L290 373 L290 382 L294 388 L306 388 L323 382 L330 368 L342 358 L351 360 L362 377 L358 394 L344 396 L340 401 L336 452 L328 476 L322 483 L322 493 L327 498 L336 493 L340 484 L340 468 L346 459 L348 447 L351 446 L360 459 L372 492 L384 553 L379 556 L364 560 L328 560 L324 562 Z"/></svg>
-        <span class="sel-tap" aria-hidden="true"></span>
-        <div class="sel-card" aria-hidden="true"><div class="sel-k">Selected</div><div class="sel-t">Wedding dress</div><div class="sel-chips"><span>Ribbon scarf</span><span>Fabric by the yard</span><span>Pillow</span></div></div>
-        <span class="tag">▶ Wedding dress · 12:11–12:19</span>
+        <span class="tag">▶ Wedding dress · 12:14–12:19</span>
       </div>
       <div class="ex-copy">
         <div class="num"><span class="chip">01</span>The maker · fashion &amp; DIY</div>
         <h3>A dress she sewed herself, now one you can order.</h3>
         <p class="lede">Isabel Paige makes her own wedding dress on camera. A viewer pauses, taps the dress, and it's priced on the spot. Name your price, and the maker and the creator who filmed it both get paid.</p>
-        <blockquote>"Make this in my size, in linen."</blockquote>
-        <p class="meta">Source: <a href="https://www.youtube.com/watch?v=LegHU2why0Y&amp;t=731s" target="_blank" rel="noopener">Isabel Paige, "I'm Getting Married"</a> · <a href="/demo">Try this exact clip in the live demo →</a></p>
+        <blockquote>"A scarf in this lace, for me."</blockquote>
+        <p class="meta">Source: <a href="https://www.youtube.com/watch?v=LegHU2why0Y&amp;t=734s" target="_blank" rel="noopener">Isabel Paige, "I'm Getting Married"</a> · <a href="/demo">Try this exact clip in the live demo →</a></p>
       </div>
     </article>
 
     <article class="ex reveal">
-      <div class="ex-media sel card-b" data-freeze="5.5" style="--tx:45.8%;--ty:47.2%">
+      <div class="ex-media sel" data-freeze="1.2" data-sel="table">
         <video muted playsinline preload="metadata" poster="media/ex-table.jpg" data-still="media/ex-table-still.jpg" aria-label="A striped napkin folded on a plate at a fall dinner party"><source src="media/ex-table.mp4" type="video/mp4"></video>
-        <svg class="sel-outline" viewBox="0 0 720 720" aria-hidden="true"><path pathLength="1" d="M212 512 L187 512 L165 500 L155 490 L148 488 L144 480 L142 478 L137 478 L132 470 L129 466 L125 466 L122 460 L109 448 L97 444 L85 432 L73 432 L62 419 L62 412 L56 408 L54 401 L32 373 L32 366 L26 363 L22 352 L22 327 L24 317 L30 307 L42 292 L53 290 L65 290 L116 258 L141 250 L171 234 L203 224 L289 208 L360 200 L466 204 L479 198 L488 198 L497 204 L509 204 L525 208 L537 214 L563 220 L570 224 L599 228 L626 234 L651 244 L659 252 L676 258 L680 262 L680 272 L676 278 L668 302 L627 344 L582 376 L565 384 L547 398 L514 418 L481 434 L475 434 L470 438 L463 438 L458 444 L451 444 L440 450 L435 456 L429 456 L424 462 L419 462 L412 470 L406 472 L402 476 L390 478 L383 484 L369 488 L350 490 L342 494 L318 496 L313 500 L259 500 L246 506 L237 506 L229 510 L212 512 Z"/></svg>
-        <span class="sel-tap" aria-hidden="true"></span>
-        <div class="sel-card" aria-hidden="true"><div class="sel-k">Selected</div><div class="sel-t">Striped napkin</div><div class="sel-chips"><span>Napkins</span><span>Tablecloth</span><span>Table runner</span></div></div>
-        <span class="tag">▶ The table · 10:48–10:55</span>
+        <span class="tag">▶ The table · 10:52–10:55</span>
       </div>
       <div class="ex-copy">
         <div class="num"><span class="chip">02</span>The host · food &amp; entertaining</div>
         <h3>The table you saw at dinner, set at yours.</h3>
         <p class="lede">A West Village dinner party: a red runner, striped napkins, dahlias everywhere. Tap the napkin and shoppab.ly turns that stripe into napkins, a tablecloth or a runner. The host who styled it earns on every table it inspires.</p>
-        <blockquote>"Napkins for twelve in this stripe, a little more blue."</blockquote>
-        <p class="meta">Source: <a href="https://www.youtube.com/watch?v=DzXnpjbY6vs&amp;t=648s" target="_blank" rel="noopener">Homeworthy, "A Cozy Fall Dinner Party in the West Village"</a></p>
+        <blockquote>"Napkins for twelve in this stripe."</blockquote>
+        <p class="meta">Source: <a href="https://www.youtube.com/watch?v=DzXnpjbY6vs&amp;t=652s" target="_blank" rel="noopener">Homeworthy, "A Cozy Fall Dinner Party in the West Village"</a></p>
       </div>
     </article>
 
     <article class="ex reveal">
-      <div class="ex-media sel card-b" data-freeze="1.9" style="--tx:62.5%;--ty:28.5%">
+      <div class="ex-media sel" data-freeze="1.2" data-sel="riad">
         <video muted playsinline preload="metadata" poster="media/ex-riad.jpg" data-still="media/ex-riad-still.jpg" aria-label="Brass lanterns hanging over a Moroccan riad courtyard"><source src="media/ex-riad.mp4" type="video/mp4"></video>
-        <svg class="sel-outline" viewBox="0 0 720 720" aria-hidden="true"><path pathLength="1" d="M462 296 L444 294 L429 296 L418 290 L405 288 L398 284 L389 274 L379 270 L372 263 L370 255 L364 250 L360 242 L358 229 L356 224 L356 189 L366 156 L381 140 L391 132 L397 134 L402 132 L408 137 L410 142 L416 148 L418 148 L419 144 L423 148 L432 144 L434 143 L432 140 L415 140 L412 138 L410 127 L412 115 L424 106 L431 102 L453 102 L462 100 L483 106 L495 108 L506 114 L510 120 L510 138 L502 144 L500 150 L506 154 L512 164 L512 176 L515 178 L530 182 L534 188 L540 193 L540 217 L536 222 L538 227 L534 232 L534 238 L524 252 L509 270 L502 272 L486 286 L462 296 Z"/></svg>
-        <span class="sel-tap" aria-hidden="true"></span>
-        <div class="sel-card" aria-hidden="true"><div class="sel-k">Selected</div><div class="sel-t">Brass lantern</div><div class="sel-chips"><span>Drum lampshade</span><span>Tall drum shade</span><span>Curtains</span></div></div>
-        <span class="tag">▶ The riad · 1:43–1:50</span>
+        <span class="tag">▶ The riad · 1:44–1:50</span>
       </div>
       <div class="ex-copy">
         <div class="num"><span class="chip">03</span>The explorer · travel &amp; culture</div>
         <h3>Bring the trip home, not just the photos.</h3>
         <p class="lede">A travel film passes through a riad: brass lanterns overhead, zellige tile underfoot. Pause on the lantern for a lampshade, or on the tile for pillows. The filmmaker gets paid when a place they captured becomes part of someone's home.</p>
-        <blockquote>"A lampshade that throws light like this."</blockquote>
-        <p class="meta">Source: <a href="https://www.youtube.com/watch?v=R9cqyRek8nQ&amp;t=103s" target="_blank" rel="noopener">Brandon Li, "Morocco Arise"</a></p>
+        <blockquote>"A lampshade that glows like this."</blockquote>
+        <p class="meta">Source: <a href="https://www.youtube.com/watch?v=R9cqyRek8nQ&amp;t=104s" target="_blank" rel="noopener">Brandon Li, "Morocco Arise"</a></p>
       </div>
     </article>
   </div>
@@ -604,7 +581,7 @@
   <div class="wrap">
     <div class="econ-hero reveal">
       <div class="eyebrow">Where your dollar goes</div>
-      <h2>Traditional commerce vs. commerce on shoppab.ly</h2>
+      <h2>Welcome to<br>collective commerce.</h2>
       <p class="lede">In retail today, more of each dollar goes to marketing than to the person who made the product. shoppab.ly moves that money to creators.</p>
     </div>
 
@@ -631,7 +608,14 @@
   </div>
 </section>
 
-<section id="projections" style="padding-top:0">
+<div class="ticker alt" aria-label="Every frame is a storefront. Every viewer is a buyer. Every creator gets paid. Every maker gets orders.">
+  <div class="ticker-track" aria-hidden="true">
+    <span>Every frame is a storefront</span><span>Every viewer is a buyer</span><span>Every creator gets paid</span><span>Every maker gets orders</span>
+    <span>Every frame is a storefront</span><span>Every viewer is a buyer</span><span>Every creator gets paid</span><span>Every maker gets orders</span>
+  </div>
+</div>
+
+<section id="projections">
   <div class="wrap">
     <div class="section-head reveal">
       <div class="eyebrow">Revenue projections</div>
@@ -645,7 +629,7 @@
     </div>
     <div class="proj-card reveal">
       <div class="proj-top">
-        <h3>Order volume by year, and who it pays</h3>
+        <h3>What each year pays out, and what shoppab.ly keeps</h3>
         <ul class="proj-legend" id="projLegend"></ul>
       </div>
       <div class="proj-chart" id="projChart"><div class="proj-tip" id="projTip"></div></div>
@@ -656,7 +640,7 @@
         </table>
       </div>
     </div>
-    <p class="fineprint">Illustrative projection, not a forecast. Order volume = buyers × orders per buyer × average order value. The split follows the target model above.</p>
+    <p class="fineprint">Illustrative projection, not a forecast. Order volume = buyers × orders per buyer × average order value. Columns show the 75% of each order paid to makers, creators and shoppab.ly; cost of goods is left out. The split follows the target model above.</p>
   </div>
 </section>
 
@@ -670,6 +654,27 @@
     <div class="rm reveal" id="rm">
       <div class="rm-line" id="rmLine"></div>
       <div class="rm-nodes" id="rmNodes"></div>
+    </div>
+  </div>
+</section>
+
+<section class="demo" id="demo">
+  <div class="wrap">
+    <div class="demo-head reveal">
+      <div class="section-head" style="margin:0">
+        <div class="eyebrow">Live platform demo</div>
+        <h2>Try it yourself.</h2>
+      </div>
+      <div class="demo-copy">
+        <div class="hero-ctas"><a class="btn" href="/demo"><span class="dot"></span>Open the live demo</a></div>
+      </div>
+    </div>
+    <div class="demo-frame reveal" id="demoFrame">
+      <div class="demo-bar"><span></span><span></span><span></span><em>shoppab.ly/demo</em></div>
+      <button class="demo-stage" id="demoLaunch" type="button" aria-label="Launch the live demo on this page">
+        <img src="/static/demo-poster.jpg" alt="" loading="lazy">
+        <span class="demo-play"><span class="dot"></span>Launch the demo here</span>
+      </button>
     </div>
   </div>
 </section>
@@ -701,14 +706,6 @@
   const onScroll = () => nav.classList.toggle('solid', scrollY > innerHeight * 0.75);
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
-  // hero pause
-  const hv = document.getElementById('heroVideo'), pb = document.getElementById('pauseHero');
-  pb.addEventListener('click', () => {
-    if (hv.paused) { hv.play(); pb.textContent = '❚❚ PAUSE'; pb.setAttribute('aria-pressed', 'false'); }
-    else { hv.pause(); pb.textContent = '▶ PLAY'; pb.setAttribute('aria-pressed', 'true'); }
-  });
-  if (reduce) { hv.pause(); pb.textContent = '▶ PLAY'; }
-
   // typewriter
   function type(el, text, speed = 55) {
     return new Promise(res => {
@@ -719,14 +716,38 @@
   }
   const typed = document.getElementById('typed');
   const lines = ['we are all born creators…', 'if you believed you could create anything…'];
-  (async () => {
+  const startTyping = async () => {
     await new Promise(r => setTimeout(r, 600));
     for (let k = 0; ; k = (k + 1) % lines.length) {
       await type(typed, lines[k]);
       await new Promise(r => setTimeout(r, 2600));
       if (reduce) break;
     }
-  })();
+  };
+
+  // hero: the film plays once, then crossfades to the loop and the hero copy
+  const hero = document.getElementById('top');
+  const hf = document.getElementById('heroFilm'), hv = document.getElementById('heroVideo');
+  const pb = document.getElementById('pauseHero');
+  let current = hf;
+  const handOff = () => {
+    if (!hero.classList.contains('film-on')) return;
+    hero.classList.remove('film-on');
+    hf.pause();
+    current = hv;
+    if (reduce) { pb.textContent = '▶ PLAY'; pb.setAttribute('aria-pressed', 'true'); }
+    else { hv.play().catch(() => {}); pb.textContent = '❚❚ PAUSE'; pb.setAttribute('aria-pressed', 'false'); }
+    startTyping();
+  };
+  hf.addEventListener('ended', handOff);
+  hf.querySelector('source').addEventListener('error', handOff);
+  document.getElementById('skipFilm').addEventListener('click', handOff);
+  if (reduce) handOff();
+  else hf.play().catch(handOff);   // autoplay blocked: go straight to the loop
+  pb.addEventListener('click', () => {
+    if (current.paused) { current.play(); pb.textContent = '❚❚ PAUSE'; pb.setAttribute('aria-pressed', 'false'); }
+    else { current.pause(); pb.textContent = '▶ PLAY'; pb.setAttribute('aria-pressed', 'true'); }
+  });
 
   // one-shot observer helper
   const once = (el, fn, threshold = 0.35) => {
@@ -735,16 +756,223 @@
   };
   document.querySelectorAll('.reveal').forEach(el => once(el, t => t.classList.add('in'), 0.15));
 
-  // freeze-frame demo
-  const fz = document.getElementById('freeze');
-  once(fz, () => { fz.classList.add('on'); setTimeout(() => type(document.getElementById('promptText'), 'make this for me and my dog', 60), 900); }, 0.5);
+  // example prompts type in like someone is entering them
+  document.querySelectorAll('.ex-copy blockquote').forEach(bq => {
+    const text = bq.textContent.replace(/^"|"$/g, '');
+    bq.setAttribute('aria-label', text);
+    if (reduce) { bq.textContent = text; return; }
+    bq.innerHTML = '<span class="bq-text"></span><span class="bq-cursor"></span>';
+    const out = bq.querySelector('.bq-text');
+    once(bq, async () => {
+      for (;;) {
+        for (let i = 1; i <= text.length; i++) { out.textContent = text.slice(0, i); await new Promise(r => setTimeout(r, 45 + Math.random() * 60)); }
+        await new Promise(r => setTimeout(r, 4200));
+        for (let i = text.length; i >= 0; i--) { out.textContent = text.slice(0, i); await new Promise(r => setTimeout(r, 18)); }
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }, 0.6);
+  });
 
-  // examples: play the moment, freeze on the selection frame, trace the outline, then resume
+  // ---------- neon selection ----------
+  // A port of the film's overlay (edit/overlay_source/overlay.html): the outline grows out of the tap
+  // point, hatching wipes across the cut-out, a tag and leader appear, then the prompt card types,
+  // "Make it" loads, and the card opens into checkout. Timings are the film's frames at 24 fps,
+  // played a third slower so they read on a page.
+  const SELS = {"cape":{"vb":[1600,900],"tap":[617,262],"label":"cape","prompt":"make this for me and my dog","est":"Est. from $24 · ships in 2 days","title":"Hero cape, kid + dog set","sub":"red satin · from the frame at 0:07","chips":["KID · M","DOG · S"],"price":[24,32],"creator":"38% → the cartoon","ships":"2 days","thumb":"media/cut-cape.png","side":"r","size":1.0,"points":[[701.0,243.0],[700.6,242.4],[700.2,242.1],[699.6,241.8],[699.1,241.7],[698.4,241.7],[696.9,242.3],[694.5,243.5],[691.1,245.3],[686.8,247.7],[682.6,249.3],[678.4,250.2],[674.3,250.3],[670.3,249.7],[666.8,249.0],[664.1,248.3],[662.0,247.5],[660.5,246.7],[659.2,245.8],[658.0,244.8],[656.9,243.9],[656.0,242.8],[655.1,241.6],[654.3,240.3],[653.5,238.9],[652.8,237.3],[651.8,235.9],[650.8,234.6],[649.5,233.4],[648.0,232.4],[646.0,231.6],[643.3,230.9],[640.1,230.5],[636.2,230.3],[632.6,230.5],[629.1,231.2],[625.9,232.3],[622.9,233.9],[620.4,235.0],[618.5,235.7],[617.1,235.9],[616.2,235.7],[615.4,235.4],[614.5,234.8],[613.6,234.2],[612.7,233.3],[611.9,232.5],[611.3,231.6],[610.9,230.7],[610.7,229.7],[610.9,228.5],[611.5,226.8],[612.4,224.9],[613.8,222.6],[614.8,220.7],[615.5,219.3],[615.8,218.2],[615.8,217.6],[615.3,217.3],[614.1,217.2],[612.4,217.4],[610.1,218.0],[607.8,218.6],[605.5,219.4],[603.2,220.3],[600.9,221.4],[598.3,222.7],[595.3,224.5],[591.9,226.5],[588.1,228.9],[584.4,231.6],[580.6,234.5],[576.9,237.7],[573.1,241.1],[570.3,244.0],[568.3,246.4],[567.2,248.3],[567.0,249.6],[566.3,251.2],[565.2,253.1],[563.5,255.3],[561.5,257.7],[558.9,260.2],[555.7,262.9],[552.1,265.8],[547.9,268.8],[543.9,271.5],[540.1,273.9],[536.5,276.0],[533.1,277.8],[530.7,280.0],[529.5,282.8],[529.3,286.0],[530.3,289.8],[530.9,292.7],[531.3,294.9],[531.4,296.2],[531.1,296.7],[530.7,297.3],[530.0,298.0],[529.1,298.8],[528.0,299.6],[527.0,300.8],[526.3,302.3],[525.8,304.3],[525.5,306.6],[525.5,308.4],[526.0,309.7],[526.9,310.5],[528.1,310.8],[530.0,310.8],[532.5,310.5],[535.6,310.0],[539.4,309.2],[543.8,308.4],[548.8,307.7],[554.5,307.1],[560.9,306.6],[568.3,305.1],[576.6,302.4],[586.0,298.8],[596.5,294.1],[605.1,290.7],[612.0,288.4],[617.1,287.4],[620.4,287.6],[624.2,287.7],[628.4,287.6],[633.1,287.3],[638.2,286.9],[643.2,286.3],[648.2,285.5],[653.2,284.5],[658.1,283.4],[662.5,282.2],[666.5,280.9],[670.1,279.5],[673.2,278.0],[676.1,276.4],[678.7,274.6],[681.0,272.7],[683.1,270.6],[685.1,268.9],[687.0,267.4],[688.8,266.2],[690.4,265.4],[692.0,264.5],[693.4,263.5],[694.6,262.4],[695.8,261.3],[696.9,260.1],[698.0,258.7],[699.1,257.2],[700.1,255.7],[700.9,253.9],[701.4,251.9],[701.7,249.7],[701.7,247.3],[701.6,245.4],[701.4,244.0]]},"dress":{"vb":[720,720],"tap":[320,470],"label":"dress","prompt":"a scarf in this lace, for me","est":"Est. from $38 · ships in 3 days","title":"Lace ribbon scarf","sub":"ivory lace · from the frame at 12:15","chips":["IVORY","SILK"],"price":[38,44],"creator":"38% → Isabel Paige","ships":"3 days","thumb":"media/cut-dress.png","side":"r","size":0.8,"points":[[319.5,560.8],[313.8,559.6],[304.6,555.8],[286.6,559.4],[265.5,559.8],[259.6,554.4],[258.0,548.7],[258.1,539.5],[260.8,520.8],[270.9,477.9],[271.8,468.2],[274.8,458.0],[276.6,445.3],[280.1,437.4],[280.0,433.1],[283.3,420.9],[283.0,414.9],[277.7,390.8],[277.8,383.9],[280.0,374.9],[282.8,368.3],[288.7,359.0],[291.5,356.5],[295.3,357.4],[298.1,360.9],[291.2,371.5],[289.5,376.4],[289.8,380.7],[291.2,384.1],[296.0,387.2],[306.4,386.9],[323.9,381.6],[331.6,367.3],[338.3,360.6],[341.8,359.0],[347.6,359.8],[352.7,362.2],[359.9,372.5],[362.5,379.2],[361.9,383.6],[357.6,394.9],[346.2,396.6],[341.2,399.3],[339.2,410.3],[337.6,432.9],[335.0,453.3],[330.9,467.0],[323.4,482.3],[322.5,489.2],[323.3,493.2],[326.5,496.5],[330.8,496.2],[335.3,492.9],[338.8,484.7],[341.6,467.3],[346.5,457.3],[348.8,447.5],[350.1,446.1],[351.1,446.6],[356.3,453.9],[361.4,464.3],[372.6,493.9],[376.6,509.6],[378.2,524.1],[381.6,538.3],[382.5,552.6],[381.8,554.3],[378.9,556.0],[369.6,558.4],[329.5,559.9],[322.0,561.0]]},"table":{"vb":[720,720],"tap":[330,340],"label":"napkin","prompt":"napkins for twelve in this stripe","est":"Est. from $48 · ships in 4 days","title":"Striped napkins, set of 12","sub":"red + blue stripe · from 10:53","chips":["SET · 12","COTTON"],"price":[48,56],"creator":"38% → Homeworthy","ships":"4 days","thumb":"media/cut-table.png","side":"r","size":0.8,"points":[[202.6,512.1],[196.4,511.9],[185.6,509.7],[165.5,499.3],[156.4,492.1],[149.1,488.3],[142.9,478.4],[136.5,476.1],[130.3,467.8],[124.6,465.3],[119.4,458.2],[107.5,447.4],[96.6,442.7],[85.2,433.6],[74.5,431.7],[68.7,427.4],[65.8,424.1],[62.6,418.9],[62.9,412.8],[57.5,408.3],[53.9,400.9],[43.6,389.2],[32.7,373.7],[31.9,367.1],[25.9,362.4],[23.1,351.8],[22.6,331.5],[25.4,315.6],[31.5,304.9],[37.3,297.9],[43.3,292.8],[48.9,290.6],[60.5,289.5],[65.9,287.5],[117.5,258.0],[145.1,247.2],[170.2,235.2],[184.3,229.8],[203.8,223.7],[226.8,217.9],[243.6,215.8],[254.3,213.2],[275.3,210.9],[291.1,207.6],[304.9,206.2],[316.0,203.8],[359.9,200.9],[389.1,200.6],[413.6,202.9],[451.8,203.5],[466.1,202.6],[479.9,198.8],[486.9,198.8],[498.7,203.2],[507.8,203.8],[519.0,206.0],[544.5,216.0],[560.8,219.4],[570.5,223.0],[605.2,228.8],[616.1,232.8],[627.3,235.4],[636.9,239.4],[644.8,241.0],[650.2,243.4],[661.7,252.3],[678.2,260.7],[679.5,265.8],[678.8,272.5],[666.8,301.6],[657.2,312.9],[642.4,326.6],[632.4,337.3],[610.1,355.9],[584.2,374.4],[560.5,387.5],[545.1,399.2],[514.0,417.9],[486.8,430.7],[475.8,433.8],[470.5,437.6],[462.5,439.4],[457.0,443.2],[451.6,443.9],[446.9,445.8],[439.8,450.2],[435.6,454.4],[429.8,455.9],[424.6,460.4],[419.5,462.1],[412.9,468.9],[405.6,472.4],[402.0,475.7],[389.4,479.3],[383.4,482.9],[374.2,486.6],[349.7,490.2],[338.0,493.6],[322.2,495.4],[310.6,498.8],[259.9,501.4],[245.1,505.2],[236.1,506.2],[222.6,510.6],[208.4,512.1]]},"riad":{"vb":[720,720],"tap":[450,205],"label":"lantern","prompt":"a lampshade that glows like this","est":"Est. from $62 · ships in 5 days","title":"Lantern-print drum shade","sub":"brass + amber · from 1:45","chips":["DRUM · M","LINEN"],"price":[62,70],"creator":"38% → Brandon Li","ships":"5 days","thumb":"media/cut-riad.png","side":"l","size":0.8,"points":[[456.8,296.1],[443.8,294.0],[434.6,294.8],[427.9,294.2],[416.2,289.5],[404.5,286.9],[395.2,281.3],[387.4,273.2],[376.6,267.1],[372.3,261.9],[368.6,254.6],[363.1,248.8],[360.2,242.7],[358.5,231.1],[356.1,222.8],[355.5,202.1],[356.6,186.4],[361.8,165.4],[368.0,153.8],[378.7,142.2],[389.5,133.9],[401.5,132.2],[407.3,136.3],[410.7,142.9],[416.1,148.0],[418.1,147.9],[419.8,144.5],[422.2,146.4],[424.6,146.8],[431.7,144.4],[433.1,142.4],[431.6,140.3],[418.8,141.1],[413.4,138.9],[410.6,126.4],[410.6,121.0],[411.8,116.9],[419.7,109.1],[428.4,103.6],[452.4,102.1],[458.9,100.5],[473.2,103.0],[483.2,106.2],[493.4,107.7],[499.1,109.8],[507.6,115.1],[509.3,120.4],[509.1,135.0],[506.9,140.2],[501.8,146.2],[501.6,150.4],[505.2,154.1],[510.4,163.2],[513.4,176.9],[514.9,178.0],[521.6,179.1],[530.9,182.4],[538.4,193.6],[539.5,202.0],[538.9,216.4],[537.1,222.6],[537.9,226.4],[534.8,232.8],[534.1,237.2],[518.7,258.6],[508.7,269.0],[499.4,274.9],[483.0,288.0],[460.1,295.9]]}};
+  const NS2 = 'http://www.w3.org/2000/svg';
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const ease = t => { t = clamp(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+  const spanT = (f, a, b) => clamp((f - a) / (b - a));
+  let selSeq = 0;
+
+  function makeSelection(host, cfg) {
+    const id = 's' + (++selSeq), [W, H] = cfg.vb, pts = cfg.points;
+    // start the path at the point nearest the tap so the outline grows out of the finger
+    let start = 0, bd = Infinity;
+    pts.forEach((p, i) => { const d = (p[0] - cfg.tap[0]) ** 2 + (p[1] - cfg.tap[1]) ** 2; if (d < bd) { bd = d; start = i; } });
+    const ring = pts.slice(start).concat(pts.slice(0, start));
+    const d = 'M' + ring.map(p => p.join(' ')).join(' L') + ' Z';
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+    const box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    const top = pts.reduce((a, p) => p[1] < a[1] ? p : a);
+
+    const layer = document.createElement('div');
+    layer.className = 'nsel';
+    layer.setAttribute('aria-hidden', 'true');
+    layer.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <filter id="${id}b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur class="fb"/></filter>
+        <filter id="${id}h" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur class="fh"/></filter>
+        <filter id="${id}s" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur class="fs"/></filter>
+        <pattern id="${id}p" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect class="hs" x="0" y="0" fill="#5CEBFF"/></pattern>
+        <clipPath id="${id}c"><path d="${d}"/></clipPath>
+        <clipPath id="${id}w"><rect class="wipe" x="0" y="0" width="0" height="${H}"/></clipPath>
+        <linearGradient id="${id}g" x1="0" x2="1"><stop offset="0" stop-color="#0AA8FF" stop-opacity="0"/><stop offset=".5" stop-color="#EFFFFF"/><stop offset="1" stop-color="#0AA8FF" stop-opacity="0"/></linearGradient>
+        <radialGradient id="${id}r"><stop offset="0" stop-color="#EFFFFF"/><stop offset=".25" stop-color="#38E1FF" stop-opacity=".8"/><stop offset="1" stop-color="#0AA8FF" stop-opacity="0"/></radialGradient>
+      </defs>
+      <g clip-path="url(#${id}c)">
+        <g clip-path="url(#${id}w)"><rect class="tint" width="${W}" height="${H}" fill="#38E1FF" opacity="0"/><rect class="hatch" x="-50" y="-50" width="${W + 100}" height="${H + 100}" fill="url(#${id}p)" opacity="0"/></g>
+        <rect class="sweep" y="0" height="${H}" fill="#EFFFFF" opacity="0" filter="url(#${id}s)"/>
+      </g>
+      <path class="halo" d="${d}" fill="none" stroke="#00B4FF" stroke-linejoin="round" pathLength="1000" filter="url(#${id}h)" opacity=".5"/>
+      <path class="glow" d="${d}" fill="none" stroke="#14C8FF" stroke-linejoin="round" pathLength="1000" filter="url(#${id}b)"/>
+      <path class="mid" d="${d}" fill="none" stroke="#38E1FF" stroke-linejoin="round" pathLength="1000" filter="url(#${id}s)"/>
+      <path class="core" d="${d}" fill="none" stroke="#F4FFFF" stroke-linejoin="round" pathLength="1000"/>
+      <g class="flare" opacity="0"><ellipse class="burst" fill="url(#${id}r)"/><rect class="streak" fill="url(#${id}g)" filter="url(#${id}s)"/><rect class="streak2" fill="url(#${id}g)"/></g>
+      <g class="tag" opacity="0"><path class="tagline" fill="none" stroke="#38E1FF"/><text class="tagtext" font-family="Space Mono, monospace" font-weight="700" fill="#EFFFFF" letter-spacing=".12em">${cfg.label.toUpperCase()}</text></g>
+      <path class="nc-lead" fill="none" stroke="#38E1FF" opacity="0"/>
+    </svg>
+    <div class="nc-card ${cfg.side}">
+      <div class="nc-small">
+        <div class="nc-eyebrow">Selection · ${cfg.label}</div>
+        <div class="nc-prompt"></div>
+        <div class="nc-foot">${cfg.est}</div>
+        <div class="nc-btn nc-make"><span class="dot"></span><span class="lbl">Make it</span></div>
+        <div class="nc-bar"></div>
+      </div>
+      <div class="nc-big">
+        <div class="nc-eyebrow">Checkout · made with Arcade</div><div class="nc-x">×</div>
+        <div class="nc-thumb"><img src="${cfg.thumb}" alt="" loading="lazy"></div>
+        <div class="nc-info"><div class="nc-title">${cfg.title}</div><div class="nc-sub">${cfg.sub}</div><div class="nc-chips">${cfg.chips.map(c => `<span>${c}</span>`).join('')}</div></div>
+        <div class="nc-price"><div class="nc-ph"><span class="nc-eyebrow">Name your price</span><span class="nc-pv"></span></div><div class="nc-track"><div class="nc-fill"></div><div class="nc-knob"></div></div></div>
+        <div class="nc-rows"><div class="nc-row"><span>Maker</span><b>Arcade studio</b></div><div class="nc-row"><span>Creator cut</span><b>${cfg.creator}</b></div><div class="nc-row"><span>Ships</span><b>${cfg.ships}</b></div><div class="nc-row"><span>Total</span><b class="nc-total"></b></div></div>
+        <div class="nc-btn nc-cta"><span class="dot"></span><span class="lbl">Confirm order</span></div>
+      </div>
+    </div>`;
+    host.appendChild(layer);
+    const q = sel => layer.querySelector(sel), qa = sel => layer.querySelectorAll(sel);
+    const svg = q('svg'), card = q('.nc-card'), strokes = ['.halo', '.glow', '.mid', '.core'].map(q);
+    let u = 1;
+
+    // stroke and glow sizes are set in screen pixels, then converted to viewBox units
+    function size() {
+      const r = svg.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      u = Math.max(W / r.width, H / r.height) * cfg.size;
+      const px = v => v * u;
+      [[strokes[0], 44], [strokes[1], 17], [strokes[2], 5], [strokes[3], 2.2]].forEach(([el, w]) => el.setAttribute('stroke-width', px(w)));
+      q('.fh').setAttribute('stdDeviation', px(22)); q('.fb').setAttribute('stdDeviation', px(9)); q('.fs').setAttribute('stdDeviation', px(2));
+      const pat = q(`#${id}p`); pat.setAttribute('width', px(12)); pat.setAttribute('height', px(12));
+      const hs = q('.hs'); hs.setAttribute('width', px(2.2)); hs.setAttribute('height', px(12));
+      q('.sweep').setAttribute('width', px(48));
+      q('.tagline').setAttribute('stroke-width', px(1.2)); q('.nc-lead').setAttribute('stroke-width', px(1.5));
+      q('.tagtext').setAttribute('font-size', px(12));
+      const tx = top[0] + px(36), ty = box[1] - px(30);
+      q('.tagline').setAttribute('d', `M${top[0]} ${top[1] - px(4)} L${tx - px(4)} ${ty + px(4)}`);
+      q('.tagtext').setAttribute('x', tx); q('.tagtext').setAttribute('y', ty);
+      q('.tag').style.filter = `drop-shadow(0 0 ${3}px #38E1FF) drop-shadow(0 0 ${8}px #0AA8FF)`;
+      q('.nc-lead').style.filter = 'drop-shadow(0 0 4px #38E1FF)';
+    }
+    size();
+    new ResizeObserver(size).observe(svg);
+
+    function typeInto(el, text, f, a, perChar, cursor) {
+      const n = Math.floor(clamp((f - a) / perChar, 0, text.length));
+      const blink = n >= text.length ? Math.floor(f / 8) % 2 === 0 : true;
+      el.innerHTML = text.slice(0, n) + (cursor && blink ? '<span class="nc-cursor"></span>' : '');
+    }
+
+    // f is a film frame (24 fps); the card and checkout follow the film's ui5 shot
+    function render(f, fade = 1) {
+      if (u === 1) size();
+      const g = ease(spanT(f, 0, 9)) * 500;
+      const dash = `${g} ${Math.max(0, 1000 - 2 * g)} ${g} 0`;
+      strokes.forEach(el => el.setAttribute('stroke-dasharray', dash));
+      const pulse = f > 9 ? 0.82 + 0.18 * Math.cos((f - 9) / 24 * Math.PI * 2 / 1.2) : 1;
+      strokes[1].setAttribute('opacity', 0.95 * pulse * fade);
+      strokes[0].setAttribute('opacity', 0.55 * pulse * fade);
+      strokes[2].setAttribute('opacity', fade); strokes[3].setAttribute('opacity', fade);
+      // hatch wipe with a scan bar
+      const w = ease(spanT(f, 5, 15)), bw = box[2] - box[0] + 40 * u;
+      q('.wipe').setAttribute('x', box[0] - 20 * u); q('.wipe').setAttribute('width', bw * w);
+      q('.hatch').setAttribute('opacity', 0.58 * w * fade);
+      q('.hatch').setAttribute('transform', `translate(${(f * 0.6 * u) % (12 * u)} 0)`);
+      q('.tint').setAttribute('opacity', 0.2 * w * fade);
+      q('.sweep').setAttribute('x', box[0] - 20 * u + bw * w - 24 * u);
+      q('.sweep').setAttribute('opacity', w > 0 && w < 1 ? 0.75 : 0);
+      q('.tag').setAttribute('opacity', ease(spanT(f, 9, 15)) * fade);
+      // tap flare
+      const ft = spanT(f, 0, 14), fo = f < 0 ? 0 : (1 - ft) ** 1.4;
+      const [x, y] = cfg.tap, rr = (50 + 140 * ease(ft)) * u * 0.6;
+      q('.flare').setAttribute('opacity', fo * fade);
+      const burst = q('.burst'); burst.setAttribute('cx', x); burst.setAttribute('cy', y); burst.setAttribute('rx', rr); burst.setAttribute('ry', rr * 0.9);
+      const sw = 900 * u * 0.6 * (0.6 + 0.4 * ease(ft));
+      const st = q('.streak'), st2 = q('.streak2');
+      st.setAttribute('x', x - sw / 2); st.setAttribute('y', y - 4 * u); st.setAttribute('width', sw); st.setAttribute('height', 8 * u);
+      st2.setAttribute('x', x - sw * 0.32); st2.setAttribute('y', y - u); st2.setAttribute('width', sw * 0.64); st2.setAttribute('height', 2 * u);
+      // card: in, type, press, load, expand, price, confirm
+      const inT = ease(spanT(f, 6, 14)), ex = ease(spanT(f, 50, 60));
+      const cw = card.offsetWidth;
+      card.style.height = (0.323 + (1.05 - 0.323) * ex) * cw + 'px';
+      card.style.opacity = inT * fade;
+      card.style.transform = `translateY(${(1 - inT) * 16}px)`;
+      typeInto(q('.nc-prompt'), cfg.prompt, f, 15, 0.8, f < 39);
+      const press = spanT(f, 38, 41), rel = spanT(f, 41, 44), make = q('.nc-make');
+      make.style.transform = `scale(${1 - 0.08 * press + 0.08 * rel})`;
+      make.style.boxShadow = press > 0 ? `0 0 ${16 * (1 - rel) + 4}px rgba(220,235,58,${0.9 * (1 - rel * 0.7)})` : 'none';
+      make.querySelector('.lbl').textContent = f >= 42 ? 'Designing…' : 'Make it';
+      q('.nc-bar').style.width = 100 * ease(spanT(f, 42, 51)) + '%';
+      q('.nc-bar').style.opacity = f < 52 ? 1 : 0;
+      q('.nc-small').style.opacity = 1 - spanT(f, 50, 54);
+      q('.nc-big').style.opacity = spanT(f, 54, 59);
+      const pr = ease(spanT(f, 58, 68)), price = Math.round(cfg.price[0] + (cfg.price[1] - cfg.price[0]) * pr);
+      q('.nc-pv').textContent = '$' + price;
+      q('.nc-total').textContent = '$' + price + '.00';
+      q('.nc-fill').style.width = 20 + 30 * pr + '%';
+      q('.nc-knob').style.left = 20 + 30 * pr + '%';
+      const cp = spanT(f, 70, 73), cr = spanT(f, 73, 76), cta = q('.nc-cta'), done = f >= 74;
+      cta.style.transform = `scale(${1 - 0.04 * cp + 0.04 * cr})`;
+      cta.style.background = done ? 'var(--chartreuse)' : 'var(--ink)';
+      cta.style.color = done ? 'var(--ink)' : 'var(--bg)';
+      cta.style.boxShadow = done ? `0 0 ${24 * (1 - spanT(f, 74, 84)) + 8}px rgba(220,235,58,.85)` : 'none';
+      cta.querySelector('.lbl').textContent = done ? '✓ Ordered' : 'Confirm order';
+      // leader from the selection to the card, in svg units
+      const sr = svg.getBoundingClientRect(), crc = card.getBoundingClientRect();
+      const lead = q('.nc-lead');
+      if (sr.width && crc.width && getComputedStyle(card).position === 'absolute') {
+        const k = Math.max(W / sr.width, H / sr.height), ox = (sr.width * k - W) / 2, oy = (sr.height * k - H) / 2;
+        const right = cfg.side === 'r', tip = pts.reduce((a, p) => (right ? p[0] > a[0] : p[0] < a[0]) ? p : a);
+        const cx = (right ? crc.left : crc.right) - sr.left, cy = crc.top - sr.top + 24;
+        const tx = cx * k - ox, ty = cy * k - oy, lt = ease(spanT(f, 8, 16));
+        lead.setAttribute('d', `M${tip[0]} ${tip[1]} L${tip[0] + (tx - tip[0]) * lt} ${tip[1] + (ty - tip[1]) * lt}`);
+        lead.setAttribute('opacity', lt * (1 - ex * 0.6) * fade);
+      } else lead.setAttribute('opacity', 0);
+    }
+    render(-1);
+    return { render, END: 84 };
+  }
+
+  // play a selection in real time: film frames at 18 fps (a third slower than the film), hold, fade out
+  function playSelection(sel, hold = 1.6) {
+    return new Promise(res => {
+      const t0 = performance.now(), total = sel.END / 18 + hold;
+      const step = now => {
+        const t = (now - t0) / 1000;
+        const fade = t > total ? 1 - clamp((t - total) / 0.4) : 1;
+        sel.render(Math.min(t * 18, sel.END + (t - sel.END / 18) * 24), fade);
+        if (t < total + 0.4) requestAnimationFrame(step); else { sel.render(-1); res(); }
+      };
+      requestAnimationFrame(step);
+    });
+  }
+
+  // freeze-frame demo: replay the film's cape selection while it's on screen
+  const fz = document.getElementById('freeze');
+  const fzSel = makeSelection(fz, SELS.cape);
+  if (reduce) fzSel.render(84);
+  else {
+    let fzOn = false, fzRun = false;
+    const loop = async () => { if (fzRun) return; fzRun = true; while (fzOn) { await playSelection(fzSel, 2.4); await new Promise(r => setTimeout(r, 900)); } fzRun = false; };
+    new IntersectionObserver(es => es.forEach(e => { fzOn = e.isIntersecting; if (fzOn) loop(); }), { threshold: 0.5 }).observe(fz);
+  }
+
+  // examples: play the moment, freeze on the selection frame, run the selection, then resume
   document.querySelectorAll('.ex-media.sel').forEach(box => {
     const v = box.querySelector('video');
     const freeze = +box.dataset.freeze;
+    const sel = makeSelection(box, SELS[box.dataset.sel]);
+    box.selection = sel;
     let visible = false, busy = false, raf = 0;
-    const wait = ms => new Promise(r => setTimeout(r, ms));
     const watch = () => {
       if (!busy && v.currentTime >= freeze - 0.04 && v.currentTime < freeze + 0.5) select();
       raf = requestAnimationFrame(watch);
@@ -753,19 +981,12 @@
       busy = true;
       v.pause();
       v.currentTime = freeze;
-      box.classList.add('tap');
-      await wait(450);
-      box.classList.add('outlined');
-      await wait(1100);
-      box.classList.add('carded');
-      await wait(2600);
-      box.classList.remove('tap', 'outlined', 'carded');
-      await wait(350);
+      await playSelection(sel);
       if (visible) play();
       setTimeout(() => (busy = false), 800);
     }
     // When video can't autoplay (reduced motion, low-power mode), show the selected frame instead.
-    const still = () => { v.pause(); v.removeAttribute('autoplay'); v.poster = v.dataset.still; box.classList.add('tap', 'outlined', 'carded', 'still'); };
+    const still = () => { v.pause(); v.poster = v.dataset.still; box.classList.add('still'); sel.render(84); };
     const play = () => v.play().catch(still);
     v.addEventListener('ended', () => { v.currentTime = 0; if (visible) play(); });
     if (reduce) { still(); return; }
@@ -892,13 +1113,13 @@
     { y: 2030, buyers: 4, opb: 3.2, aov: 58 },
     { y: 2031, buyers: 9, opb: 3.5, aov: 60 },
   ].map(r => ({ ...r, gmv: r.buyers * r.opb * r.aov }));
-  // bottom to top: shoppab.ly's revenue sits on the baseline
+  // bottom to top: makers, creators, then shoppab.ly's revenue capping each column
   const shares = [
-    { key: 'fee', name: 'shoppab.ly revenue', p: 0.07, color: '--c-fee' },
     { key: 'maker', name: 'Makers', p: 0.30, color: '--c-maker' },
     { key: 'content', name: 'Content creators', p: 0.38, color: '--c-content' },
-    { key: 'cogs', name: 'Cost of goods', p: 0.25, color: '--c-cogs' },
+    { key: 'fee', name: 'shoppab.ly revenue', p: 0.07, color: '--c-fee' },
   ];
+  const paid = r => r.gmv * shares.reduce((a, sh) => a + sh.p, 0);
   document.getElementById('projLegend').innerHTML = shares.map(sh => `<li><span class="sw" style="background:var(${sh.color});${sh.key === 'fee' ? 'box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)' : ''}"></span>${sh.name}</li>`).join('');
   document.getElementById('projTable').innerHTML = [
     ['Buyers', r => r.buyers >= 1 ? r.buyers + 'M' : r.buyers * 1000 + 'K'],
@@ -909,11 +1130,11 @@
   ].map(([label, f, cls]) => `<tr class="${cls || ''}"><td>${label}</td>${proj.map(r => `<td>${f(r)}</td>`).join('')}</tr>`).join('');
 
   const chart = document.getElementById('projChart'), tip = document.getElementById('projTip');
-  const PW = 1000, PH = 420, PL = 64, PR = 10, PT = 28, PB = 36, max = 2000;
+  const PW = 1000, PH = 420, PL = 64, PR = 10, PT = 40, PB = 36, max = 1500;
   const sx = i => PL + (PW - PL - PR) * (i + 0.5) / proj.length, bw = Math.min(110, (PW - PL - PR) / proj.length * 0.56);
   const sy = v => PT + (PH - PT - PB) * (1 - v / max);
   let svg = `<svg viewBox="0 0 ${PW} ${PH}" role="img" aria-label="Projected order volume by year: ${proj.map(r => r.y + ' ' + money(r.gmv)).join(', ')}"><g class="grid">`;
-  [0, 500, 1000, 1500, 2000].forEach(v => { svg += `<line x1="${PL}" x2="${PW - PR}" y1="${sy(v)}" y2="${sy(v)}"/><text x="${PL - 10}" y="${sy(v) + 4}" text-anchor="end">${v ? money(v) : '$0'}</text>`; });
+  [0, 500, 1000, 1500].forEach(v => { svg += `<line x1="${PL}" x2="${PW - PR}" y1="${sy(v)}" y2="${sy(v)}"/><text x="${PL - 10}" y="${sy(v) + 4}" text-anchor="end">${v ? money(v) : '$0'}</text>`; });
   svg += '</g>';
   proj.forEach((r, i) => {
     const x = sx(i) - bw / 2;
@@ -925,9 +1146,14 @@
       svg += `<rect x="${x}" width="${bw}" y="${y1}" height="${h}" rx="${top ? 4 : 0}" fill="var(${sh.color})" ${sh.key === 'fee' ? 'stroke="rgba(0,0,0,.25)" stroke-width="1"' : ''} style="transform-origin:${sx(i)}px ${sy(0)}px"/>`;
       acc += v;
     });
-    svg += `<text class="total" x="${sx(i)}" y="${sy(r.gmv) - 10}" text-anchor="middle">${money(r.gmv)}</text>`;
     svg += `<text class="xlab" x="${sx(i)}" y="${PH - 10}" text-anchor="middle">${r.y}</text>`;
     svg += `<rect class="hit" x="${sx(i) - (PW - PL - PR) / proj.length / 2}" y="${PT}" width="${(PW - PL - PR) / proj.length}" height="${PH - PT - PB}"/></g>`;
+  });
+  // trend line with a dot on top of each column, labelled with that year's revenue
+  const tops = proj.map((r, i) => [sx(i), sy(paid(r))]);
+  svg += `<path class="trend" d="M${tops.map(t => t.join(' ')).join(' L')}" pathLength="1"/>`;
+  tops.forEach(([x, y], i) => {
+    svg += `<g class="tdot" style="transition-delay:${1100 + i * 160}ms"><circle cx="${x}" cy="${y}" r="7"/><text x="${x}" y="${y - 16}" text-anchor="middle">${money(proj[i].gmv * 0.07)}</text></g>`;
   });
   chart.insertAdjacentHTML('afterbegin', svg + '</svg>');
   const bars = chart.querySelectorAll('.bar');
@@ -938,7 +1164,7 @@
       tip.innerHTML = `<b>${r.y} · ${money(r.gmv)} in orders</b>` + shares.slice().reverse().map(sh => `<div><i style="background:var(${sh.color})"></i><span>${sh.name}</span><span>${money(r.gmv * sh.p)}</span></div>`).join('');
       const box = chart.getBoundingClientRect(), k = box.width / PW;
       tip.style.left = Math.min(Math.max(sx(+g.dataset.i) * k, 110), box.width - 110) + 'px';
-      tip.style.top = Math.max(sy(r.gmv) * k, 120) + 'px';
+      tip.style.top = Math.max(sy(paid(r)) * k - 30, 120) + 'px';
       tip.classList.add('on');
     });
     g.addEventListener('mouseleave', () => { bars.forEach(o => o.classList.remove('dim')); tip.classList.remove('on'); });
@@ -946,10 +1172,14 @@
   // bars grow from the baseline on scroll
   const rects = chart.querySelectorAll('.bar rect:not(.hit)');
   if (!reduce) rects.forEach(rc => { rc.style.transform = 'scaleY(0)'; });
-  once(chart, () => chart.querySelectorAll('.bar').forEach((g, i) => g.querySelectorAll('rect:not(.hit)').forEach(rc => {
-    rc.style.transition = `transform .9s cubic-bezier(.2,.7,.2,1) ${i * 140}ms`;
-    rc.style.transform = 'scaleY(1)';
-  })), 0.3);
+  once(chart, () => {
+    chart.querySelectorAll('.bar').forEach((g, i) => g.querySelectorAll('rect:not(.hit)').forEach(rc => {
+      rc.style.transition = `transform .9s cubic-bezier(.2,.7,.2,1) ${i * 140}ms`;
+      rc.style.transform = 'scaleY(1)';
+    }));
+    chart.classList.add('drawn');
+  }, 0.3);
+  if (reduce) chart.classList.add('drawn');
   document.querySelectorAll('[data-money]').forEach(el => once(el, () => {
     const to = +el.dataset.money, t0 = performance.now(), dur = reduce ? 0 : 1300;
     const step = now => {
