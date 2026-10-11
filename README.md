@@ -9,8 +9,9 @@ The Python HTTP client is **httpx2**.
 The marketing site is served at `/` from `marketing/index.html`, with its media
 under `marketing/media/` (mounted at `/media`). The demo app lives at `/demo`.
 The marketing page is plain HTML, CSS and JavaScript with no build step. Its
-example videos are YouTube embeds that loop a short moment with captions turned
-off.
+example tiles are short self-hosted 720px clips (`marketing/media/ex-*.mp4`) that
+freeze on a selection frame and draw an outline traced from a SlimSAM mask of
+that frame. A still frame with the outline is shown when autoplay is blocked.
 
 ## Run locally
 
